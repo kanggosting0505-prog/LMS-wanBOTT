@@ -1,0 +1,2083 @@
+<!doctype html>
+
+
+  
+  
+  wanBOTT - LMS & Digital Product Hub
+
+  <!-- PWA Manifest via Data URI -->
+  <link rel="manifest" href="data:application/manifest+json;utf-8,%7B%22name%22%3A%22wanBOTT%20LMS%22%2C%22short_name%22%3A%22wanBOTT%22%2C%22description%22%3A%22Platform%20LMS%20dan%20Modul%20Produk%20Digital%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23e9edf2%22%2C%22theme_color%22%3A%22%23132f4c%22%7D" />
+
+  <!-- Google Fonts: Plus Jakarta Sans / Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              800: '#173554',
+              900: '#132f4c',
+              950: '#0e2338',
+            },
+            accent: {
+              orange: '#f59e0b',
+              amber: '#f97316'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    /* Reset & Full Screen Override untuk Template Blogger & Web */
+    #navbar-iframe, .navbar, header.region-header, footer.region-footer, .sidebar-wrapper, .blog-pager, .post-footer, #header-wrapper, #footer-wrapper {
+      display: none !important;
+    }
+    
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #e9edf2;
+      color: #1e293b;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #app-container {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: #e9edf2;
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* Soft Elevated Neomorphic Card Style */
+    .dashboard-card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -4px rgba(19, 47, 76, 0.05), 0 4px 10px -2px rgba(19, 47, 76, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      transition: all 0.25s ease;
+    }
+
+    .navy-card {
+      background: #132f4c;
+      color: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 12px 28px -5px rgba(19, 47, 76, 0.25);
+    }
+
+    .sidebar-navy {
+      background: #132f4c;
+      color: #ffffff;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Switch Checkbox Animation */
+    .switch-input:checked ~ .switch-dot {
+      transform: translateX(100%);
+      background-color: #ffffff;
+    }
+    .switch-input:checked ~ .switch-bg {
+      background-color: #f59e0b;
+    }
+  </style>
+
+
+
+  <!-- ROOT APPLICATION CONTAINER -->
+  <div id="app-container">
+    
+    <!-- BACKDROP OVERLAY UNTUK MOBILE DRAWER -->
+    <div id="sidebar-backdrop" onclick="closeMobileSidebar()" class="fixed inset-0 bg-navy-950/60 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
+
+    <!-- RESPONSIVE SIDEBAR (COLLAPSIBLE DI DESKTOP, OFF-CANVAS SLIDE DI MOBILE) -->
+    <aside id="app-sidebar" class="fixed md:static inset-y-0 left-0 z-50 md:z-20 w-64 sidebar-navy h-full shrink-0 shadow-2xl flex flex-col transition-all duration-300 -translate-x-full md:translate-x-0 md:flex">
+      <!-- Profile Box di Bagian Atas Sidebar -->
+      <div class="pt-8 pb-6 px-6 flex flex-col items-center text-center border-b border-white/10 shrink-0">
+        <div class="relative mb-3">
+          <div id="sidebar-avatar-circle" class="w-20 h-20 rounded-full bg-navy-800 text-white flex items-center justify-center text-3xl font-extrabold shadow-inner border-2 border-white/20">
+            <i class="fa-solid fa-user"></i>
+          </div>
+        </div>
+        <h2 id="sidebar-user-name" class="font-extrabold text-white text-base tracking-wider uppercase">
+          ADMINISTRATOR
+        </h2>
+        <p id="sidebar-user-email" class="text-xs text-slate-300/80 font-normal mt-0.5 truncate max-w-[190px]">
+          admin@wanbott.local
+        </p>
+      </div>
+
+      <!-- Sidebar Navigation Items -->
+      <nav id="sidebar-nav-container" class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        <!-- Rendered dynamically -->
+      </nav>
+
+      <!-- Sidebar Bottom Action -->
+      <div class="p-4 border-t border-white/10 shrink-0">
+        <button type="button" onclick="handleAuthAction()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-colors">
+          <i class="fa-solid fa-arrow-right-from-bracket text-sm w-5 text-center"></i>
+          <span id="sidebar-logout-text">Keluar Akun</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN VIEWPORT WRAPPER -->
+    <div class="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative">
+      
+      <!-- TOP NAVIGATION BAR -->
+      <header id="app-header" class="px-6 md:px-10 py-5 flex items-center justify-between shrink-0">
+        <!-- Page Title & Mobile Brand -->
+        <div class="flex items-center gap-3">
+          <div class="md:hidden w-8 h-8 rounded-xl bg-navy-900 text-white flex items-center justify-center text-sm font-bold shadow">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <h1 id="topbar-page-title" class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
+            Dashboard Admin
+          </h1>
+        </div>
+
+        <!-- Top Right Header Controls -->
+        <div class="flex items-center gap-3">
+          <!-- Search Bar Minimalist -->
+          <div class="hidden sm:flex items-center gap-2 bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm w-64">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs"></i>
+            <input type="text" id="global-search-input" oninput="handleSearchModule(this.value)" placeholder="Cari modul / data..." class="bg-transparent text-xs w-full focus:outline-none text-slate-700" />
+          </div>
+
+          <!-- Bantuan WhatsApp Admin -->
+          <button type="button" onclick="openWhatsAppAdmin()" class="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-slate-50 border border-slate-200 shadow-sm text-slate-700 transition-all">
+            <i class="fa-brands fa-whatsapp text-emerald-500 text-sm"></i>
+            <span>Admin</span>
+          </button>
+
+          <!-- Toggle Sidebar Hamburger -->
+          <button type="button" onclick="toggleSidebar()" title="Toggle Menu" class="p-2 text-slate-700 hover:text-navy-900 text-xl font-bold rounded-lg transition-colors focus:outline-none">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- SCROLLABLE MAIN CONTENT AREA -->
+      <main id="main-content-area" class="flex-1 overflow-y-auto px-6 md:px-10 pb-24 md:pb-10">
+        <!-- Render current view -->
+      </main>
+
+      <!-- MOBILE BOTTOM NAVIGATION -->
+      <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2.5 px-3 z-30 flex items-center justify-around shadow-lg">
+        <!-- Rendered dynamically -->
+      </nav>
+
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- DIALOGS & MODALS (DITEMPATKAN DI DALAM APP CONTAINER)    -->
+    <!-- ======================================================= -->
+
+    <!-- MODAL 1: KELOLA IZIN AKSES MEMBER (LOCK / UNLOCK MATRIX) -->
+    <div id="modal-manage-access" class="fixed inset-0 z-[500] hidden flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm" onclick="if(event.target === this) closeAccessControlModal()">
+      <div class="dashboard-card w-full max-w-xl p-6 sm:p-7 relative max-h-[90vh] flex flex-col shadow-2xl border-none">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div>
+            <h3 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-amber-500"></i>
+              Kontrol Izin Akses Modul
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Member: <span class="font-bold text-slate-800" id="target-member-name">-</span></p>
+          </div>
+          <button type="button" onclick="closeAccessControlModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="flex items-center justify-between py-3">
+          <span class="text-xs font-semibold text-slate-500">Daftar Modul & Produk Digital</span>
+          <div class="flex gap-2">
+            <button type="button" onclick="bulkToggleMemberAccess(true)" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-all flex items-center gap-1">
+              <i class="fa-solid fa-lock-open text-[11px]"></i> Buka Semua
+            </button>
+            <button type="button" onclick="bulkToggleMemberAccess(false)" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 transition-all flex items-center gap-1">
+              <i class="fa-solid fa-lock text-[11px]"></i> Kunci Semua
+            </button>
+          </div>
+        </div>
+
+        <!-- Module Checklist Container -->
+        <div id="member-access-module-list" class="flex-1 overflow-y-auto space-y-2.5 pr-1">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex justify-end">
+          <button type="button" onclick="closeAccessControlModal()" class="px-6 py-2.5 rounded-xl bg-navy-900 text-white font-bold text-xs hover:bg-navy-950 transition-all shadow-md">
+            Selesai
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: FORM TAMBAH / EDIT MODUL (LMS BUILDER) -->
+    <div id="modal-module-form" class="fixed inset-0 z-[500] hidden flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm" onclick="if(event.target === this) closeModal('modal-module-form')">
+      <div class="dashboard-card w-full max-w-xl p-6 sm:p-7 relative max-h-[90vh] flex flex-col shadow-2xl border-none">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <h3 id="module-form-title" class="text-base sm:text-lg font-bold text-slate-800">Tambah Modul Baru</h3>
+          <button type="button" onclick="closeModal('modal-module-form')" class="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <form id="form-manage-module" onsubmit="handleSaveModule(event)" class="flex-1 overflow-y-auto space-y-3.5 py-4 pr-1">
+          <input type="hidden" id="mod-id" />
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Modul / Produk Digital *</label>
+            <input type="text" id="mod-title" required placeholder="Contoh: Asisten promt vidio animasi" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-navy-900 bg-white" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Kategori *</label>
+              <select id="mod-category" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-navy-900 bg-white">
+                <option value="Kelas Online" />Kelas Online
+                <option value="Link &amp; Tools Web" />Link & Tools Web
+                <option value="Source Code" />Source Code
+                <option value="E-Book &amp; Panduan" />E-Book & Panduan
+                <option value="Template &amp; Aset" />Template & Aset
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Tipe Akses</label>
+              <div class="flex items-center gap-2 mt-2.5">
+                <input type="checkbox" id="mod-free-preview" class="w-4 h-4 rounded text-amber-500 focus:ring-amber-500 border-slate-300" />
+                <label for="mod-free-preview" class="text-xs text-slate-700 font-medium">Gratis (Terbuka untuk semua)</label>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">URL Gambar Cover</label>
+            <input type="url" id="mod-cover-url" placeholder="https://images.unsplash.com/..." class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-navy-900 bg-white" />
+          </div>
+
+          <!-- INPUT KHUSUS: TAUTAN LANGSUNG / LINK BEBAS -->
+          <div class="p-3.5 bg-amber-50 rounded-2xl border border-amber-200">
+            <label class="block text-xs font-bold text-amber-900 mb-1 flex items-center gap-1.5">
+              <i class="fa-solid fa-arrow-up-right-from-square text-amber-600"></i>
+              URL Tautan Langsung / Link Bebas (Buka Otomatis)
+            </label>
+            <input type="url" id="mod-external-url" placeholder="https://... (contoh: Link Web App, Notion, Tool AI, Prompt, dsb)" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-amber-300 focus:outline-none focus:border-amber-500 bg-white text-slate-800" />
+            <p class="text-[11px] text-amber-700 mt-1.5 leading-relaxed">
+              ✨ <strong>Fitur Link Bebas:</strong> Jika diisi, user yang berhak akan langsung diarahkan ke link eksternal ini secara otomatis di tab baru saat mengklik modul.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">URL Video Materi (YouTube / MP4 / Embed)</label>
+            <input type="text" id="mod-video-url" placeholder="https://www.youtube.com/watch?v=..." class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-navy-900 bg-white" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">URL Unduhan / File Digital / Google Drive</label>
+            <input type="url" id="mod-download-url" placeholder="https://drive.google.com/..." class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-navy-900 bg-white" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Ringkasan / Deskripsi Singkat *</label>
+            <textarea id="mod-desc" rows="2" required placeholder="Deskripsi ringkas modul..." class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-navy-900 bg-white"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Teks Materi / Catatan Modul (HTML/Teks)</label>
+            <textarea id="mod-content-text" rows="3" placeholder="Tuliskan catatan, silabus materi, atau petunjuk di sini..." class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-navy-900 bg-white font-mono"></textarea>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+            <button type="button" onclick="closeModal('modal-module-form')" class="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Batal</button>
+            <button type="submit" class="px-5 py-2.5 text-xs font-bold bg-navy-900 hover:bg-navy-950 text-white rounded-xl shadow-md">Simpan Modul</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 3: FORM TAMBAH / EDIT DATA MEMBER (ADMIN CONTROL) -->
+    <div id="modal-member-form" class="fixed inset-0 z-[500] hidden flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm" onclick="if(event.target === this) closeModal('modal-member-form')">
+      <div class="dashboard-card w-full max-w-md p-6 sm:p-7 relative max-h-[90vh] flex flex-col shadow-2xl border-none">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <h3 id="member-form-title" class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-user-pen text-navy-900"></i>
+            <span>Perbarui Data Member</span>
+          </h3>
+          <button type="button" onclick="closeModal('modal-member-form')" class="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <form id="form-manage-member" onsubmit="handleSaveMember(event)" class="flex-1 overflow-y-auto space-y-3.5 py-4 pr-1">
+          <input type="hidden" id="mem-edit-id" />
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap *</label>
+            <input type="text" id="mem-edit-name" required placeholder="Contoh: Budi Santoso" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-navy-900 bg-white" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Username / ID Peserta *</label>
+            <input type="text" id="mem-edit-username" required placeholder="Contoh: budi_santoso" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-navy-900 bg-white" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor WhatsApp *</label>
+            <div class="flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">
+              <i class="fa-brands fa-whatsapp text-emerald-500 mr-2 text-sm"></i>
+              <input type="tel" id="mem-edit-wa" required placeholder="Contoh: 6281234567890" class="w-full text-xs bg-transparent focus:outline-none text-slate-800" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Kata Sandi (Password) *</label>
+            <input type="text" id="mem-edit-password" required placeholder="Masukkan kata sandi..." class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-navy-900 bg-white font-mono" />
+            <p class="text-[11px] text-slate-400 mt-1">Admin dapat mereset atau mengubah kata sandi langsung dari sini.</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Status Akun</label>
+            <select id="mem-edit-status" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-navy-900 bg-white">
+              <option value="active" />Aktif (Dapat Login & Belajar)
+              <option value="blocked" />Diblokir (Akses Ditutup)
+            </select>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+            <button type="button" onclick="closeModal('modal-member-form')" class="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Batal</button>
+            <button type="submit" class="px-5 py-2.5 text-xs font-bold bg-navy-900 hover:bg-navy-950 text-white rounded-xl shadow-md">Simpan Data</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- MODAL CONFIRMATION -->
+    <div id="modal-confirm" class="fixed inset-0 z-[9998] hidden flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm">
+      <div class="dashboard-card w-full max-w-sm p-6 text-center shadow-2xl border-none">
+        <div id="confirm-icon" class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3 text-lg">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h4 id="confirm-title" class="font-bold text-slate-800 text-base mb-1">Konfirmasi</h4>
+        <p id="confirm-message" class="text-xs text-slate-500 mb-5 leading-relaxed">Apakah Anda yakin ingin melanjutkan tindakan ini?</p>
+        <div class="flex items-center justify-center gap-2.5">
+          <button type="button" id="btn-confirm-cancel" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Batal</button>
+          <button type="button" id="btn-confirm-proceed" class="px-5 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-md">Lanjutkan</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======================================================= -->
+  <!-- JAVASCRIPT APLIKASI UTAMA (STANDARD GLOBAL EXECUTION)   -->
+  <!-- ======================================================= -->
+  <script>
+    // ==========================================
+    // 1. KONFIGURASI SUPABASE & SAKELAR
+    // ==========================================
+    var IS_PREVIEW = false; // Set false jika sudah terhubung ke database Supabase
+    var SUPABASE_URL = "https://kwosvqgejjqsuhcepchb.supabase.co";
+    var SUPABASE_ANON_KEY = "sb_publishable_HpwWiSf6tyx2yspUUGVqCQ_ObVwKzz1";
+
+    var supabaseClient = null;
+    if (!IS_PREVIEW && window.supabase && SUPABASE_URL && !SUPABASE_URL.includes("your-project")) {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      } catch (e) {
+        console.error("Gagal menginisialisasi Supabase:", e);
+      }
+    }
+
+    // ==========================================
+    // 2. DATA DUMMY AWAL (LOKAL & FALLBACK)
+    // ==========================================
+    var DUMMY_MODULES_INIT = [
+      {
+        id: "mod-link-demo",
+        title: "Asisten promt vidio animasi",
+        category: "Kelas Online",
+        description: "buat vidio animasi anda disini dengan cepat",
+        cover_url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=60",
+        external_url: "https://animasistudio.com",
+        video_url: "",
+        content_text: "<p>Gunakan prompt generator ini untuk menghasilkan video animasi secara instan.</p>",
+        download_url: "",
+        is_free_preview: false,
+        order_index: 1
+      },
+      {
+        id: "mod-1",
+        title: "Mastering Fullstack WebApp & Database Cloud",
+        category: "Kelas Online",
+        description: "Panduan membangun aplikasi web modern, serverless backend, dan real-time database.",
+        cover_url: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=60",
+        external_url: "",
+        video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        content_text: "<h3>Selamat Datang di Modul 1!</h3><p>Pada modul ini kita membahas arsitektur web modern.</p>",
+        download_url: "https://github.com",
+        is_free_preview: true,
+        order_index: 2
+      },
+      {
+        id: "mod-2",
+        title: "Source Code Aplikasi Kasir & POS Cloud",
+        category: "Source Code",
+        description: "Template siap pakai kasir pintar dengan cetak struk bluetooth dan laporan stok otomatis.",
+        cover_url: "https://images.unsplash.com/photo-1556742044-3c52d6e88c62?w=800&auto=format&fit=crop&q=60",
+        external_url: "",
+        video_url: "https://www.youtube.com/watch?v=L_LUpnjgPso",
+        content_text: "<h3>Panduan Instalasi POS</h3><p>Ekstrak arsip file dan jalankan di browser atau hosting Anda.</p>",
+        download_url: "https://drive.google.com",
+        is_free_preview: false,
+        order_index: 3
+      },
+      {
+        id: "mod-3",
+        title: "E-Book: 10 Strategi Monetisasi Produk Digital 2026",
+        category: "E-Book & Panduan",
+        description: "Buku panduan taktis menjual ribuan lisensi modul, aset digital, dan e-course.",
+        cover_url: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&auto=format&fit=crop&q=60",
+        external_url: "",
+        video_url: "",
+        content_text: "<h3>Daftar Isi E-Book</h3><p>Panduan lengkap penjualan produk digital.</p>",
+        download_url: "https://example.com/ebook.pdf",
+        is_free_preview: false,
+        order_index: 4
+      }
+    ];
+
+    var DUMMY_MEMBERS_INIT = [
+      {
+        id: "mem-1",
+        full_name: "Budi Santoso",
+        username: "budi",
+        whatsapp: "6281234567890",
+        password: "123",
+        is_active: true,
+        created_at: new Date().toISOString()
+      },
+      {
+        id: "mem-2",
+        full_name: "Siti Rahma",
+        username: "siti",
+        whatsapp: "6289876543210",
+        password: "123",
+        is_active: true,
+        created_at: new Date().toISOString()
+      }
+    ];
+
+    var DUMMY_ACCESS_INIT = [];
+
+    // LocalStorage Helper
+    function getStore(key, defaultVal) {
+      try {
+        var data = localStorage.getItem('wanbott_' + key);
+        return data ? JSON.parse(data) : defaultVal;
+      } catch (e) {
+        return defaultVal;
+      }
+    }
+    function setStore(key, val) {
+      try {
+        localStorage.setItem('wanbott_' + key, JSON.stringify(val));
+      } catch (e) {}
+    }
+
+    // ==========================================
+    // 3. STATE APLIKASI UTAMA
+    // ==========================================
+    var storedUser = getStore('auth_user', null);
+    var state = {
+      currentUser: storedUser,
+      currentPage: storedUser ? (storedUser.role === 'admin' ? 'home' : 'catalog') : 'home',
+      allowGuestBrowse: storedUser !== null,
+      authGatewayTab: 'admin',
+      isGatewayRegister: false,
+      selectedModuleId: null,
+      activeMemberForAccess: null,
+      searchQuery: '',
+      activeCategory: 'Semua',
+      adminWa: getStore('admin_wa', '6281234567890'),
+      modules: getStore('modules', DUMMY_MODULES_INIT),
+      members: getStore('members', DUMMY_MEMBERS_INIT),
+      accessGrants: getStore('access_grants', DUMMY_ACCESS_INIT)
+    };
+
+    // ==========================================
+    // 4. NOTIFIKASI TOAST & MODAL KONFIRMASI (NO ALERT)
+    // ==========================================
+    window.showToast = function(msg, type) {
+      type = type || 'success';
+      var container = document.getElementById('toast-container');
+      if (!container) return;
+
+      var toast = document.createElement('div');
+      var bg = type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-rose-600' : 'bg-navy-900');
+      var icon = type === 'success' ? 'fa-check' : (type === 'error' ? 'fa-circle-xmark' : 'fa-info');
+
+      toast.className = 'flex items-center gap-2.5 px-4 py-3 rounded-2xl text-white text-xs font-semibold shadow-xl ' + bg + ' transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto max-w-sm';
+      toast.innerHTML = '<i class="fa-solid ' + icon + '"></i> <span>' + msg + '</span>';
+      container.appendChild(toast);
+
+      setTimeout(function() {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      }, 20);
+
+      setTimeout(function() {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(function() { toast.remove(); }, 300);
+      }, 3500);
+    };
+
+    window.customConfirm = function(title, msg, onProceed) {
+      var modal = document.getElementById('modal-confirm');
+      document.getElementById('confirm-title').innerText = title;
+      document.getElementById('confirm-message').innerText = msg;
+      modal.classList.remove('hidden');
+
+      var btnProceed = document.getElementById('btn-confirm-proceed');
+      var btnCancel = document.getElementById('btn-confirm-cancel');
+
+      var cleanup = function() {
+        modal.classList.add('hidden');
+        btnProceed.onclick = null;
+        btnCancel.onclick = null;
+      };
+
+      btnProceed.onclick = function() {
+        cleanup();
+        if (typeof onProceed === 'function') onProceed();
+      };
+      btnCancel.onclick = cleanup;
+    };
+
+    window.closeModal = function(id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    };
+
+    // ==========================================
+    // 5. PENGECEKAN HAK AKSES MODUL
+    // ==========================================
+    function isMemberGranted(moduleId, targetMemberId) {
+      if (!targetMemberId) return false;
+      return state.accessGrants.some(function(g) {
+        return String(g.member_id) === String(targetMemberId) && 
+               String(g.module_id) === String(moduleId) && 
+               (g.is_granted === true || g.is_granted === 'true' || g.is_granted === 1);
+      });
+    }
+
+    function checkHasAccess(moduleId) {
+      if (state.currentUser && state.currentUser.role === 'admin') return true;
+
+      var mod = state.modules.find(function(m) { return String(m.id) === String(moduleId); });
+      if (mod && mod.is_free_preview) return true;
+
+      var targetUserId = state.currentUser && state.currentUser.role === 'member' ? state.currentUser.data.id : null;
+      if (!targetUserId) return false;
+
+      return isMemberGranted(moduleId, targetUserId);
+    }
+
+    // ==========================================
+    // 6. KONTROL AUTENTIKASI & LOGOUT
+    // ==========================================
+    window.handleAuthAction = function() {
+      if (state.currentUser) {
+        customConfirm("Konfirmasi Keluar", "Apakah Anda yakin ingin keluar dari akun wanBOTT?", function() {
+          if (!IS_PREVIEW && state.currentUser.role === 'admin' && supabaseClient) {
+            supabaseClient.auth.signOut();
+          }
+          state.currentUser = null;
+          setStore('auth_user', null);
+          state.allowGuestBrowse = false;
+          state.authGatewayTab = 'admin';
+          state.currentPage = 'home';
+          renderApp();
+          showToast("Anda telah keluar dari akun.", "info");
+        });
+      } else {
+        state.allowGuestBrowse = false;
+        renderApp();
+      }
+    };
+
+    window.continueAsGuest = function() {
+      state.allowGuestBrowse = true;
+      state.currentPage = 'catalog';
+      renderApp();
+    };
+
+    window.switchGatewayTab = function(tab) {
+      state.authGatewayTab = tab;
+      state.isGatewayRegister = false;
+      renderApp();
+    };
+
+    window.toggleGatewayRegisterMode = function() {
+      state.isGatewayRegister = !state.isGatewayRegister;
+      renderApp();
+    };
+
+    // Submit Login Administrator
+    window.handleGatewayAdminSubmit = async function(e) {
+      if (e) e.preventDefault();
+      var emailEl = document.getElementById('gate-admin-email');
+      var passEl = document.getElementById('gate-admin-password');
+      if (!emailEl || !passEl) return;
+
+      var email = emailEl.value.trim().toLowerCase();
+      var password = passEl.value;
+
+      if (!IS_PREVIEW && supabaseClient) {
+        try {
+          var res = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+          if (res.error) {
+            var errMsg = res.error.message;
+            if (errMsg.toLowerCase().includes("invalid login credentials")) {
+              showToast("Email/Password salah, atau email belum dikonfirmasi di Supabase Auth.", "error");
+            } else {
+              showToast("Login Gagal: " + errMsg, "error");
+            }
+            return;
+          }
+
+          state.currentUser = {
+            role: 'admin',
+            data: {
+              id: res.data.user.id,
+              email: res.data.user.email,
+              full_name: 'ADMINISTRATOR',
+              username: 'admin'
+            }
+          };
+        } catch (err) {
+          showToast("Koneksi Supabase bermasalah: " + err.message, "error");
+          return;
+        }
+      } else {
+        // Mode Demo / Fallback Lokal
+        if ((email === "admin@lms.local" && password === "admin123") || email.includes("admin")) {
+          state.currentUser = {
+            role: 'admin',
+            data: {
+              id: 'admin-super',
+              email: email,
+              full_name: 'ADMINISTRATOR',
+              username: 'admin'
+            }
+          };
+        } else {
+          showToast("Email atau kata sandi tidak cocok!", "error");
+          return;
+        }
+      }
+
+      setStore('auth_user', state.currentUser);
+      state.allowGuestBrowse = true;
+      state.currentPage = 'home';
+      renderApp();
+      showToast("Selamat datang di wanBOTT Dashboard!", "success");
+    };
+
+    // Submit Login / Register Peserta (Member)
+    window.handleGatewayMemberSubmit = async function(e) {
+      if (e) e.preventDefault();
+      var userEl = document.getElementById('gate-member-username');
+      var passEl = document.getElementById('gate-member-password');
+      if (!userEl || !passEl) return;
+
+      var username = userEl.value.trim().toLowerCase();
+      var password = passEl.value;
+
+      if (state.isGatewayRegister) {
+        var nameEl = document.getElementById('gate-reg-name');
+        var waEl = document.getElementById('gate-reg-wa');
+        var fullName = nameEl ? nameEl.value.trim() : '';
+        var whatsapp = waEl ? waEl.value.trim() : '';
+
+        if (!fullName || !whatsapp || !username || !password) {
+          showToast("Lengkapi semua kolom pendaftaran!", "error");
+          return;
+        }
+
+        var exists = state.members.some(function(m) { return m.username === username; });
+        if (exists) {
+          showToast("Username ini sudah digunakan!", "error");
+          return;
+        }
+
+        var newMember = {
+          id: 'mem-' + Date.now(),
+          full_name: fullName,
+          username: username,
+          password: password,
+          whatsapp: whatsapp,
+          is_active: true,
+          created_at: new Date().toISOString()
+        };
+
+        if (!IS_PREVIEW && supabaseClient) {
+          try {
+            var dbRes = await supabaseClient.from('members').insert([{
+              full_name: fullName,
+              username: username,
+              password: password,
+              whatsapp: whatsapp,
+              is_active: true
+            }]).select();
+            if (dbRes.data && dbRes.data[0]) newMember.id = dbRes.data[0].id;
+          } catch (err) {
+            console.warn("Simpan ke Supabase gagal, fallback lokal:", err);
+          }
+        }
+
+        state.members.push(newMember);
+        setStore('members', state.members);
+
+        state.currentUser = { role: 'member', data: newMember };
+        setStore('auth_user', state.currentUser);
+        state.allowGuestBrowse = true;
+        state.currentPage = 'home';
+        showToast("Pendaftaran berhasil! Selamat datang, " + fullName);
+        renderApp();
+      } else {
+        var memberFound = null;
+        if (!IS_PREVIEW && supabaseClient) {
+          try {
+            var checkRes = await supabaseClient
+              .from('members')
+              .select('*')
+              .eq('username', username)
+              .eq('password', password)
+              .single();
+            if (checkRes.data) memberFound = checkRes.data;
+          } catch (e) {}
+        }
+
+        if (!memberFound) {
+          memberFound = state.members.find(function(m) {
+            return m.username === username && m.password === password;
+          });
+        }
+
+        if (memberFound) {
+          if (!memberFound.is_active) {
+            showToast("Akun Anda telah dinonaktifkan oleh Administrator.", "error");
+            return;
+          }
+          state.currentUser = { role: 'member', data: memberFound };
+          setStore('auth_user', state.currentUser);
+          state.allowGuestBrowse = true;
+          state.currentPage = 'home';
+          showToast("Berhasil masuk. Selamat datang kembali!");
+          renderApp();
+        } else {
+          showToast("Username atau kata sandi tidak cocok!", "error");
+        }
+      }
+    };
+
+    // ==========================================
+    // 7. NAVIGASI HALAMAN & SEARCH
+    // ==========================================
+    window.navigateTo = function(pageId) {
+      state.currentPage = pageId;
+      closeMobileSidebar();
+      renderApp();
+    };
+
+    window.handleSearchModule = function(val) {
+      state.searchQuery = (val || '').toLowerCase();
+      if (state.currentPage === 'catalog' || state.currentPage === 'file') {
+        renderApp();
+      }
+    };
+
+    window.openWhatsAppAdmin = function() {
+      window.open('https://wa.me/' + state.adminWa + '?text=' + encodeURIComponent('Halo Admin wanBOTT, saya butuh bantuan terkait akses modul.'), '_blank');
+    };
+
+    window.promptUnlock = function(modId) {
+      var mod = state.modules.find(function(m) { return m.id === modId; });
+      if (!mod) return;
+      var userName = state.currentUser ? (state.currentUser.data.full_name + ' (@' + state.currentUser.data.username + ')') : 'Pengunjung Baru';
+      var msg = encodeURIComponent('Halo Admin wanBOTT, saya ' + userName + '. Saya ingin meminta izin buka akses untuk modul: "' + mod.title + '". Mohon informasinya.');
+      window.open('https://wa.me/' + state.adminWa + '?text=' + msg, '_blank');
+    };
+
+    // Toggle Sidebar Bersih: Collapse di Desktop, Drawer Slide di Mobile
+    window.toggleSidebar = function() {
+      var sidebar = document.getElementById('app-sidebar');
+      var backdrop = document.getElementById('sidebar-backdrop');
+      if (!sidebar) return;
+
+      var isDesktop = window.innerWidth >= 768;
+
+      if (isDesktop) {
+        if (sidebar.classList.contains('md:hidden')) {
+          sidebar.classList.remove('md:hidden');
+          sidebar.classList.add('md:flex');
+        } else {
+          sidebar.classList.remove('md:flex');
+          sidebar.classList.add('md:hidden');
+        }
+      } else {
+        var isClosed = sidebar.classList.contains('-translate-x-full');
+        if (isClosed) {
+          sidebar.classList.remove('-translate-x-full');
+          if (backdrop) backdrop.classList.remove('hidden');
+        } else {
+          sidebar.classList.add('-translate-x-full');
+          if (backdrop) backdrop.classList.add('hidden');
+        }
+      }
+    };
+
+    window.closeMobileSidebar = function() {
+      var sidebar = document.getElementById('app-sidebar');
+      var backdrop = document.getElementById('sidebar-backdrop');
+      if (sidebar && window.innerWidth < 768) {
+        sidebar.classList.add('-translate-x-full');
+        if (backdrop) backdrop.classList.add('hidden');
+      }
+    };
+
+    // ==========================================
+    // 8. RENDER NAVIGATION SIDEBAR
+    // ==========================================
+    function renderNavigation() {
+      var sidebarContainer = document.getElementById('sidebar-nav-container');
+      var bottomNavContainer = document.getElementById('mobile-bottom-nav');
+      if (!sidebarContainer || !bottomNavContainer) return;
+
+      var role = state.currentUser ? state.currentUser.role : null;
+      var navItems = [];
+
+      if (role === 'admin') {
+        navItems = [
+          { id: 'home', label: 'Dashboard', icon: 'fa-chart-pie' },
+          { id: 'catalog', label: 'Katalog Modul', icon: 'fa-layer-group' },
+          { id: 'file', label: 'Kelola Modul', icon: 'fa-folder-open' },
+          { id: 'messages', label: 'Izin & Member', icon: 'fa-users-gear' },
+          { id: 'notification', label: 'Pengaturan Kontak', icon: 'fa-sliders' }
+        ];
+      } else {
+        navItems = [
+          { id: 'home', label: 'Dashboard', icon: 'fa-chart-pie' },
+          { id: 'catalog', label: 'Katalog Modul', icon: 'fa-layer-group' },
+          { id: 'file', label: 'Modul Saya', icon: 'fa-circle-check' },
+          { id: 'notification', label: 'Bantuan Admin', icon: 'fa-headset' }
+        ];
+      }
+
+      sidebarContainer.innerHTML = navItems.map(function(item) {
+        var active = state.currentPage === item.id;
+        return '<button type="button" onclick="navigateTo(\'' + item.id + '\')" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-xs font-semibold tracking-wide transition-all ' + 
+          (active ? 'bg-white/15 text-white font-bold shadow-sm' : 'text-slate-300/80 hover:bg-white/5 hover:text-white') + '">' +
+          '<i class="fa-solid ' + item.icon + ' text-sm w-5 text-center"></i>' +
+          '<span>' + item.label + '</span>' +
+          '</button>';
+      }).join('');
+
+      bottomNavContainer.innerHTML = navItems.map(function(item) {
+        var active = state.currentPage === item.id;
+        return '<button type="button" onclick="navigateTo(\'' + item.id + '\')" class="flex flex-col items-center justify-center py-1 flex-1 transition-all ' +
+          (active ? 'text-accent-orange font-bold scale-105' : 'text-slate-400 hover:text-slate-600') + '">' +
+          '<i class="fa-solid ' + item.icon + ' text-base mb-0.5"></i>' +
+          '<span class="text-[10px] tracking-tight leading-none truncate max-w-[65px]">' + item.label + '</span>' +
+          '</button>';
+      }).join('');
+
+      var nameEl = document.getElementById('sidebar-user-name');
+      var emailEl = document.getElementById('sidebar-user-email');
+      var avatarCircle = document.getElementById('sidebar-avatar-circle');
+      var topbarTitle = document.getElementById('topbar-page-title');
+
+      if (state.currentUser) {
+        var isAdm = state.currentUser.role === 'admin';
+        nameEl.innerText = isAdm ? 'ADMINISTRATOR' : (state.currentUser.data.full_name || 'MEMBER').toUpperCase();
+        emailEl.innerText = isAdm ? (state.currentUser.data.email || 'admin@wanbott.local') : ('@' + (state.currentUser.data.username || 'member'));
+        avatarCircle.innerHTML = '<i class="fa-solid ' + (isAdm ? 'fa-user-shield' : 'fa-graduation-cap') + '"></i>';
+        if (topbarTitle) {
+          if (state.currentPage === 'home') topbarTitle.innerText = isAdm ? 'Dashboard Admin' : 'Dashboard Peserta';
+          else if (state.currentPage === 'catalog') topbarTitle.innerText = 'Katalog Modul';
+          else if (state.currentPage === 'file') topbarTitle.innerText = isAdm ? 'Kelola Modul & Konten' : 'Modul Saya';
+          else if (state.currentPage === 'messages') topbarTitle.innerText = 'Izin & Manajemen Member';
+          else if (state.currentPage === 'notification') topbarTitle.innerText = isAdm ? 'Pengaturan Kontak Admin' : 'Bantuan WhatsApp Admin';
+        }
+      } else {
+        nameEl.innerText = 'GUEST VISITOR';
+        emailEl.innerText = 'Mode Jelajah Katalog';
+        avatarCircle.innerHTML = '<i class="fa-solid fa-user-secret"></i>';
+        if (topbarTitle) topbarTitle.innerText = 'Katalog Modul wanBOTT';
+      }
+    }
+
+    // ==========================================
+    // 9. VIEW: DASHBOARD UTAMA
+    // ==========================================
+    function renderHomeDashboard() {
+      var totalMods = state.modules.length;
+      var totalMems = state.members.length;
+      var totalGrants = state.accessGrants.filter(function(g) { 
+        return g.is_granted === true || g.is_granted === 'true' || g.is_granted === 1; 
+      }).length;
+      var totalDirectLinks = state.modules.filter(function(m) {
+        return (m.external_url && m.external_url.trim().length > 0) || m.is_free_preview;
+      }).length;
+
+      var maxPossible = (totalMods * totalMems) || 1;
+      var accessPercent = Math.min(100, Math.round((totalGrants / maxPossible) * 100)) || (totalMods > 0 ? 45 : 0);
+      var strokeOffset = Math.round(238.7 * (1 - (accessPercent / 100)));
+
+      var categories = ['Kelas Online', 'Link Bebas', 'Source Code', 'E-Book', 'Template'];
+      var catCounts = [
+        state.modules.filter(function(m) { return m.category === 'Kelas Online'; }).length,
+        state.modules.filter(function(m) { return m.category === 'Link & Tools Web' || (m.external_url && m.external_url.length > 0); }).length,
+        state.modules.filter(function(m) { return m.category === 'Source Code'; }).length,
+        state.modules.filter(function(m) { return m.category === 'E-Book & Panduan'; }).length,
+        state.modules.filter(function(m) { return m.category === 'Template & Aset'; }).length
+      ];
+      var maxCat = Math.max.apply(null, catCounts.concat([3]));
+      var topModules = state.modules.slice(0, 4);
+
+      return '<div class="space-y-6">' +
+        '<!-- 1. TOP 4 METRIC CARDS ROW -->' +
+        '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">' +
+          
+          '<div class="navy-card p-5 relative overflow-hidden flex flex-col justify-between h-32 cursor-pointer hover:shadow-xl transition-all" onclick="navigateTo(\'catalog\')">' +
+            '<div class="flex items-center justify-between">' +
+              '<span class="text-xs font-semibold text-slate-200">Total Modul & Produk</span>' +
+              '<div class="w-7 h-7 rounded-full bg-white text-navy-900 flex items-center justify-center text-xs font-black shadow-sm">' +
+                '<i class="fa-solid fa-layer-group"></i>' +
+              '</div>' +
+            '</div>' +
+            '<div>' +
+              '<h3 class="text-3xl font-extrabold tracking-tight text-white">' + totalMods + '</h3>' +
+              '<p class="text-[11px] text-slate-300 mt-1">Materi & Produk Aktif</p>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="dashboard-card p-5 relative overflow-hidden flex flex-col justify-between h-32 cursor-pointer hover:shadow-md transition-all" onclick="navigateTo(\'messages\')">' +
+            '<div class="flex items-center justify-between">' +
+              '<span class="text-xs font-semibold text-slate-500">Total Peserta</span>' +
+              '<div class="text-accent-orange text-base">' +
+                '<i class="fa-solid fa-users"></i>' +
+              '</div>' +
+            '</div>' +
+            '<div>' +
+              '<h3 class="text-3xl font-extrabold tracking-tight text-slate-800">' + totalMems + '</h3>' +
+              '<p class="text-[11px] text-slate-400 mt-1">Peserta Terdaftar</p>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="dashboard-card p-5 relative overflow-hidden flex flex-col justify-between h-32 cursor-pointer hover:shadow-md transition-all" onclick="navigateTo(\'messages\')">' +
+            '<div class="flex items-center justify-between">' +
+              '<span class="text-xs font-semibold text-slate-500">Izin Akses Aktif</span>' +
+              '<div class="text-accent-orange text-base">' +
+                '<i class="fa-solid fa-unlock-keyhole"></i>' +
+              '</div>' +
+            '</div>' +
+            '<div>' +
+              '<h3 class="text-3xl font-extrabold tracking-tight text-slate-800">' + totalGrants + '</h3>' +
+              '<p class="text-[11px] text-slate-400 mt-1">Modul Berhasil Di-Unlock</p>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="dashboard-card p-5 relative overflow-hidden flex flex-col justify-between h-32 cursor-pointer hover:shadow-md transition-all" onclick="navigateTo(\'catalog\')">' +
+            '<div class="flex items-center justify-between">' +
+              '<span class="text-xs font-semibold text-slate-500">Link Bebas / Gratis</span>' +
+              '<div class="text-accent-orange text-base">' +
+                '<i class="fa-solid fa-arrow-up-right-from-square"></i>' +
+              '</div>' +
+            '</div>' +
+            '<div>' +
+              '<h3 class="text-3xl font-extrabold tracking-tight text-slate-800">' + totalDirectLinks + '</h3>' +
+              '<p class="text-[11px] text-slate-400 mt-1">Tautan Langsung Siap Pakai</p>' +
+            '</div>' +
+          '</div>' +
+
+        '</div>' +
+
+        '<!-- 2. MIDDLE & LOWER GRID -->' +
+        '<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">' +
+          
+          '<div class="lg:col-span-2 space-y-5">' +
+            
+            '<div class="dashboard-card p-6">' +
+              '<div class="flex items-center justify-between mb-4">' +
+                '<div>' +
+                  '<h4 class="text-sm font-bold text-slate-800">Distribusi Kategori Materi & Modul</h4>' +
+                  '<p class="text-[11px] text-slate-400 mt-0.5">Komposisi produk digital dan kursus aktif dalam platform</p>' +
+                '</div>' +
+                '<button type="button" onclick="navigateTo(\'catalog\')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-accent-orange hover:bg-amber-600 text-white shadow-sm transition-all">' +
+                  'Lihat Katalog' +
+                '</button>' +
+              '</div>' +
+
+              '<div class="relative pt-6 pb-2">' +
+                '<div class="flex items-end justify-around h-40 gap-3 px-2 border-b border-slate-100">' +
+                  categories.map(function(cat, idx) {
+                    var val = catCounts[idx];
+                    var hPercent = Math.max(15, Math.round((val / maxCat) * 85));
+                    var isTop = val === Math.max.apply(null, catCounts) && val > 0;
+                    return '<div class="flex flex-col items-center flex-1 h-full justify-end gap-1.5 relative">' +
+                      (isTop ? '<div class="absolute -top-7 px-2 py-0.5 rounded bg-navy-900 text-white text-[9px] font-bold shadow">' + val + ' Modul</div>' : '') +
+                      '<div class="flex items-end gap-1.5 w-full justify-center h-full">' +
+                        '<div class="w-3 sm:w-4 bg-accent-orange rounded-t" style="height: ' + Math.max(10, Math.round(hPercent * 0.6)) + '%;"></div>' +
+                        '<div class="w-3 sm:w-4 bg-navy-900 rounded-t" style="height: ' + hPercent + '%;"></div>' +
+                      '</div>' +
+                      '<span class="text-[9px] font-bold text-slate-500 mt-1 truncate max-w-[70px] text-center">' + cat + '</span>' +
+                    '</div>';
+                  }).join('') +
+
+                  '<div class="hidden sm:flex flex-col justify-center gap-2 pl-4 border-l border-slate-100 text-[10px] text-slate-500 font-bold shrink-0">' +
+                    '<div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-navy-900 rounded-sm"></span> Total Item</div>' +
+                    '<div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-accent-orange rounded-sm"></span> Akses Aktif</div>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+
+            '<div class="dashboard-card p-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">' +
+              '<div class="md:col-span-2 space-y-3">' +
+                '<div class="flex items-center justify-between">' +
+                  '<div class="flex items-center gap-4 text-xs font-bold text-slate-600">' +
+                    '<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-accent-orange"></span> Modul Dibuka</span>' +
+                    '<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-navy-900"></span> Modul Terkunci</span>' +
+                  '</div>' +
+                  '<span class="text-[11px] text-slate-400 font-semibold">Trafik Belajar Mingguan</span>' +
+                '</div>' +
+                '<div class="h-28 w-full relative">' +
+                  '<svg class="w-full h-full" viewBox="0 0 500 150" preserveAspectRatio="none">' +
+                    '<defs>' +
+                      '<linearGradient id="orangeGrad" x1="0" y1="0" x2="0" y2="1">' +
+                        '<stop offset="0%" stop-color="#f59e0b" stop-opacity="0.8"/>' +
+                        '<stop offset="100%" stop-color="#f59e0b" stop-opacity="0.05"/>' +
+                      '</linearGradient>' +
+                      '<linearGradient id="navyGrad" x1="0" y1="0" x2="0" y2="1">' +
+                        '<stop offset="0%" stop-color="#132f4c" stop-opacity="0.6"/>' +
+                        '<stop offset="100%" stop-color="#132f4c" stop-opacity="0.0"/>' +
+                      '</linearGradient>' +
+                    '</defs>' +
+                    '<path d="M0,130 C120,40 180,120 250,50 C320,10 400,100 500,60 L500,150 L0,150 Z" fill="url(#navyGrad)"/>' +
+                    '<path d="M0,130 C120,40 180,120 250,50 C320,10 400,100 500,60" fill="none" stroke="#132f4c" stroke-width="2.5"/>' +
+                    '<path d="M0,140 C80,110 150,60 210,120 C280,10 330,130 500,110 L500,150 L0,150 Z" fill="url(#orangeGrad)"/>' +
+                    '<path d="M0,140 C80,110 150,60 210,120 C280,10 330,130 500,110" fill="none" stroke="#f59e0b" stroke-width="2.5"/>' +
+                  '</svg>' +
+                '</div>' +
+              '</div>' +
+
+              '<div class="border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-5 text-center">' +
+                '<p class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider">Aktivitas Hari Ini</p>' +
+                '<div class="grid grid-cols-7 gap-1 text-[10px] font-bold text-slate-400 mb-1">' +
+                  '<span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>' +
+                '</div>' +
+                '<div class="grid grid-cols-7 gap-1 text-[9px] font-medium text-slate-600">' +
+                  '<span class="text-slate-300"></span><span class="text-slate-300"></span><span class="text-slate-300"></span><span class="text-slate-300"></span><span class="text-slate-300"></span><span>1</span><span>2</span>' +
+                  '<span>3</span><span class="bg-navy-900 text-white rounded font-bold">4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>' +
+                  '<span>10</span><span>11</span><span>12</span><span class="bg-navy-900 text-white rounded font-bold">13</span><span>14</span><span>15</span><span>16</span>' +
+                  '<span>17</span><span>18</span><span>19</span><span class="bg-accent-orange text-white rounded font-bold">20</span><span>21</span><span>22</span><span>23</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+
+          '</div>' +
+
+          '<div class="dashboard-card p-6 flex flex-col justify-between space-y-6">' +
+            '<div class="flex flex-col items-center pt-2">' +
+              '<span class="text-xs font-bold text-slate-700 mb-3">Tingkat Izin Terbuka</span>' +
+              '<div class="relative w-36 h-36 flex items-center justify-center">' +
+                '<svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">' +
+                  '<circle cx="50" cy="50" r="38" stroke="#132f4c" stroke-width="12" fill="none" />' +
+                  '<circle cx="50" cy="50" r="38" stroke="#f59e0b" stroke-width="12" fill="none" stroke-dasharray="238.7" stroke-dashoffset="' + strokeOffset + '" stroke-linecap="round" />' +
+                '</svg>' +
+                '<div class="absolute inset-0 flex flex-col items-center justify-center">' +
+                  '<span class="text-2xl font-black text-slate-800">' + accessPercent + '%</span>' +
+                  '<span class="text-[10px] text-slate-400 font-semibold">Izin Aktif</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+
+            '<div class="space-y-2 border-t border-slate-100 pt-4">' +
+              '<p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Modul & Link Pilihan</p>' +
+              (topModules.length > 0 ? topModules.map(function(m) {
+                return '<div onclick="openLessonViewer(\'' + m.id + '\')" class="p-2 rounded-xl hover:bg-slate-50 cursor-pointer flex items-center justify-between text-left transition-colors group">' +
+                  '<div class="flex items-center gap-2 min-w-0 pr-2">' +
+                    '<i class="fa-solid ' + (m.external_url ? 'fa-arrow-up-right-from-square text-accent-orange' : 'fa-circle-play text-navy-900') + ' text-xs shrink-0"></i>' +
+                    '<span class="text-xs font-semibold text-slate-700 group-hover:text-navy-900 truncate">' + m.title + '</span>' +
+                  '</div>' +
+                  '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 shrink-0">' + (m.is_free_preview ? 'Gratis' : 'Lisensi') + '</span>' +
+                '</div>';
+              }).join('') : '<p class="text-xs text-slate-400 text-center py-4">Belum ada modul ditambahkan.</p>') +
+            '</div>' +
+
+            '<button type="button" onclick="navigateTo(\'catalog\')" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-accent-orange hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 transition-all text-center flex items-center justify-center gap-2">' +
+              '<i class="fa-solid fa-compass"></i> Buka Katalog Modul' +
+            '</button>' +
+          '</div>' +
+
+        '</div>' +
+      '</div>';
+    }
+
+    // ==========================================
+    // 10. VIEW: KATALOG MODUL & PRODUK DIGITAL
+    // ==========================================
+    function renderCatalogView(isMyModulesOnly) {
+      var categories = ['Semua', 'Link & Tools Web', 'Kelas Online', 'Source Code', 'E-Book & Panduan', 'Template & Aset'];
+
+      var list = state.modules.filter(function(m) {
+        var matchSearch = m.title.toLowerCase().indexOf(state.searchQuery) !== -1 || m.description.toLowerCase().indexOf(state.searchQuery) !== -1;
+        var matchCategory = state.activeCategory === 'Semua' || m.category === state.activeCategory;
+        return matchSearch && matchCategory;
+      });
+
+      if (isMyModulesOnly) {
+        if (!state.currentUser) {
+          return '<div class="dashboard-card p-10 text-center max-w-md mx-auto my-12">' +
+            '<div class="w-16 h-16 rounded-2xl bg-amber-50 text-accent-orange flex items-center justify-center mx-auto mb-4 text-2xl">' +
+              '<i class="fa-solid fa-lock"></i>' +
+            '</div>' +
+            '<h3 class="text-base font-bold text-slate-800">Akses Modul Anda</h3>' +
+            '<p class="text-xs text-slate-500 mt-1.5 mb-6">Silakan masuk dengan akun peserta Anda untuk melihat materi yang sudah dibuka oleh Admin.</p>' +
+            '<button type="button" onclick="handleAuthAction()" class="px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-950 text-white font-bold text-xs shadow-md">' +
+              'Masuk ke Akun' +
+            '</button>' +
+          '</div>';
+        }
+        list = list.filter(function(m) { return checkHasAccess(m.id); });
+      }
+
+      var html = '<div class="space-y-6">' +
+        '<div class="flex items-center gap-2 overflow-x-auto pb-1">' +
+          categories.map(function(cat) {
+            var active = state.activeCategory === cat;
+            return '<button type="button" onclick="state.activeCategory=\'' + cat + '\'; renderApp();" class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ' +
+              (active ? 'bg-navy-900 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80') + '">' +
+              cat +
+              '</button>';
+          }).join('') +
+        '</div>';
+
+      if (list.length === 0) {
+        html += '<div class="dashboard-card p-12 text-center text-slate-400">' +
+          '<i class="fa-solid fa-folder-open text-4xl mb-3"></i>' +
+          '<p class="text-xs font-semibold">Tidak ada modul yang ditemukan.</p>' +
+        '</div>';
+      } else {
+        html += '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">';
+        html += list.map(function(mod) {
+          var unlocked = checkHasAccess(mod.id);
+          var cover = mod.cover_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600';
+          var hasDirectLink = mod.external_url && mod.external_url.trim().length > 0;
+
+          return '<div class="dashboard-card overflow-hidden flex flex-col group hover:-translate-y-1 transition-all duration-300">' +
+            '<div class="relative h-44 w-full bg-slate-200 overflow-hidden">' +
+              '<img src="' + cover + '" alt="' + mod.title + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />' +
+              '<div class="absolute top-3 left-3 flex flex-col gap-1 items-start">' +
+                '<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-white/95 text-slate-700 shadow-sm">' + mod.category + '</span>' +
+                (hasDirectLink ? '<span class="px-2 py-0.5 rounded-lg text-[9px] font-extrabold bg-accent-orange text-white shadow-sm flex items-center gap-1"><i class="fa-solid fa-arrow-up-right-from-square"></i> Link Bebas</span>' : '') +
+              '</div>' +
+              '<div class="absolute top-3 right-3">' +
+                (unlocked 
+                  ? '<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500 text-white shadow-sm flex items-center gap-1"><i class="fa-solid fa-unlock"></i> Terbuka</span>'
+                  : '<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500 text-white shadow-sm flex items-center gap-1"><i class="fa-solid fa-lock"></i> Terkunci</span>') +
+              '</div>' +
+            '</div>' +
+            '<div class="p-5 flex-1 flex flex-col justify-between">' +
+              '<div>' +
+                '<h4 class="font-bold text-slate-800 text-sm leading-snug line-clamp-2">' + mod.title + '</h4>' +
+                '<p class="text-xs text-slate-500 mt-2 line-clamp-2">' + mod.description + '</p>' +
+              '</div>' +
+              '<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">' +
+                (unlocked
+                  ? (hasDirectLink 
+                      ? '<button type="button" onclick="openLessonViewer(\'' + mod.id + '\')" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-accent-orange hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 transition-all"><i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Tautan Langsung</button>'
+                      : '<button type="button" onclick="openLessonViewer(\'' + mod.id + '\')" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-navy-900 hover:bg-navy-950 text-white shadow-md flex items-center justify-center gap-1.5 transition-all"><i class="fa-solid fa-play"></i> Buka Materi</button>')
+                  : '<button type="button" onclick="promptUnlock(\'' + mod.id + '\')" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white flex items-center justify-center gap-1.5 transition-all"><i class="fa-brands fa-whatsapp text-emerald-400"></i> Minta Akses Admin</button>') +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+        html += '</div>';
+      }
+
+      html += '</div>';
+      return html;
+    }
+
+    // ==========================================
+    // 11. LMS VIEWER & PENGALIHAN LINK BEBAS
+    // ==========================================
+    window.openLessonViewer = function(modId) {
+      var mod = state.modules.find(function(m) { return m.id === modId; });
+      if (!mod) {
+        showToast("Modul tidak ditemukan!", "error");
+        return;
+      }
+
+      if (!checkHasAccess(modId)) {
+        showToast("Modul ini terkunci untuk akun Anda!", "error");
+        return;
+      }
+
+      if (mod.external_url && mod.external_url.trim()) {
+        var targetUrl = mod.external_url.trim();
+        if (!/^https?:\/\//i.test(targetUrl)) {
+          targetUrl = 'https://' + targetUrl;
+        }
+        window.open(targetUrl, '_blank');
+        showToast("Membuka tautan: " + mod.title, "success");
+        return;
+      }
+
+      state.selectedModuleId = modId;
+      state.currentPage = 'view-module';
+      renderApp();
+    };
+
+    function renderModuleViewer() {
+      var mod = state.modules.find(function(m) { return m.id === state.selectedModuleId; });
+      if (!mod) {
+        return '<p class="p-8 text-center text-xs text-slate-500">Modul tidak ditemukan. <button type="button" onclick="navigateTo(\'catalog\')" class="text-navy-900 font-bold">Kembali</button></p>';
+      }
+
+      var videoHtml = '';
+      if (mod.video_url) {
+        var vUrl = mod.video_url;
+        if (vUrl.indexOf('youtube.com/watch?v=') !== -1) {
+          var vidId = vUrl.split('v=')[1].split('&')[0];
+          videoHtml = '<div class="relative w-full aspect-video bg-black"><iframe src="https://www.youtube.com/embed/' + vidId + '" title="' + mod.title + '" class="w-full h-full border-0" allowfullscreen></iframe></div>';
+        } else if (vUrl.indexOf('youtu.be/') !== -1) {
+          var vidId2 = vUrl.split('youtu.be/')[1].split('?')[0];
+          videoHtml = '<div class="relative w-full aspect-video bg-black"><iframe src="https://www.youtube.com/embed/' + vidId2 + '" title="' + mod.title + '" class="w-full h-full border-0" allowfullscreen></iframe></div>';
+        } else {
+          videoHtml = '<div class="relative w-full aspect-video bg-black"><video controls src="' + vUrl + '" class="w-full h-full"></video></div>';
+        }
+      } else {
+        videoHtml = '<div class="h-48 relative bg-navy-900 overflow-hidden flex items-center justify-center p-6 text-white text-center">' +
+          '<img src="' + (mod.cover_url || '') + '" class="absolute inset-0 w-full h-full object-cover opacity-20" />' +
+          '<div class="relative z-10 max-w-lg">' +
+            '<span class="px-2.5 py-1 rounded-lg bg-white/20 text-[10px] font-bold uppercase tracking-wider">' + mod.category + '</span>' +
+            '<h2 class="text-xl sm:text-2xl font-black mt-2">' + mod.title + '</h2>' +
+          '</div>' +
+        '</div>';
+      }
+
+      return '<div class="max-w-5xl mx-auto space-y-6">' +
+        '<div class="flex items-center justify-between">' +
+          '<button type="button" onclick="navigateTo(\'catalog\')" class="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 px-3.5 py-2 rounded-xl bg-white border border-slate-200">' +
+            '<i class="fa-solid fa-arrow-left"></i> Kembali ke Katalog' +
+          '</button>' +
+          '<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">' +
+            '<i class="fa-solid fa-circle-check mr-1 text-emerald-500"></i> Akses Terverifikasi' +
+          '</span>' +
+        '</div>' +
+        '<div class="dashboard-card overflow-hidden">' +
+          videoHtml +
+          '<div class="p-6 md:p-8 space-y-6">' +
+            '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">' +
+              '<div>' +
+                '<h1 class="text-lg sm:text-xl font-bold text-slate-800">' + mod.title + '</h1>' +
+                '<p class="text-xs text-slate-500 mt-1">' + mod.description + '</p>' +
+              '</div>' +
+              (mod.download_url ? '<a href="' + mod.download_url + '" target="_blank" rel="noopener noreferrer" class="shrink-0 px-5 py-3 rounded-xl bg-accent-orange hover:bg-amber-600 text-white font-bold text-xs shadow-md shadow-amber-500/20 flex items-center justify-center gap-2"><i class="fa-solid fa-cloud-arrow-down text-sm"></i> Download Aset Digital</a>' : '') +
+            '</div>' +
+            '<div class="prose prose-sm max-w-none text-slate-700 leading-relaxed space-y-4">' +
+              (mod.content_text || '<p class="text-xs text-slate-400 italic">Belum ada rangkuman teks materi untuk modul ini.</p>') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    // ==========================================
+    // 12. VIEW: FILE (KELOLA MODUL UNTUK ADMIN / MODUL SAYA UNTUK USER)
+    // ==========================================
+    function renderFileView() {
+      if (!state.currentUser || state.currentUser.role !== 'admin') {
+        return renderCatalogView(true);
+      }
+
+      return '<div class="space-y-6">' +
+        '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">' +
+          '<div>' +
+            '<h2 class="text-xl font-extrabold text-slate-800">Manajemen Modul & Produk</h2>' +
+            '<p class="text-xs text-slate-500 mt-0.5">Tambah materi, tautan bebas, dan kelola tipe akses</p>' +
+          '</div>' +
+          '<button type="button" onclick="openModuleFormModal()" class="px-4 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-950 text-white font-bold text-xs shadow-md flex items-center gap-2">' +
+            '<i class="fa-solid fa-plus"></i> Tambah Modul Baru' +
+          '</button>' +
+        '</div>' +
+
+        '<div class="dashboard-card overflow-hidden">' +
+          '<div class="overflow-x-auto">' +
+            '<table class="w-full text-left text-xs">' +
+              '<thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">' +
+                '<tr>' +
+                  '<th class="p-4">Cover & Judul</th>' +
+                  '<th class="p-4">Kategori</th>' +
+                  '<th class="p-4">Tipe Akses</th>' +
+                  '<th class="p-4">Media</th>' +
+                  '<th class="p-4 text-right">Tindakan</th>' +
+                '</tr>' +
+              '</thead>' +
+              '<tbody class="divide-y divide-slate-100 text-slate-700">' +
+                state.modules.map(function(m) {
+                  return '<tr class="hover:bg-slate-50/50 transition-colors">' +
+                    '<td class="p-4 flex items-center gap-3">' +
+                      '<img src="' + (m.cover_url || 'https://via.placeholder.com/80') + '" class="w-12 h-10 object-cover rounded-lg shrink-0" />' +
+                      '<div>' +
+                        '<p class="font-bold text-slate-800 flex items-center gap-1.5">' + 
+                          m.title + 
+                          (m.external_url ? '<span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-semibold"><i class="fa-solid fa-arrow-up-right-from-square"></i> Link Bebas</span>' : '') +
+                        '</p>' +
+                        '<p class="text-[11px] text-slate-400 line-clamp-1">' + (m.external_url ? ('Tautan: ' + m.external_url) : m.description) + '</p>' +
+                      '</div>' +
+                    '</td>' +
+                    '<td class="p-4"><span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 font-semibold">' + m.category + '</span></td>' +
+                    '<td class="p-4">' +
+                      (m.is_free_preview 
+                        ? '<span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold">Gratis (Semua)</span>'
+                        : '<span class="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 font-bold">Terkunci (Izin Admin)</span>') +
+                    '</td>' +
+                    '<td class="p-4 space-x-1.5">' +
+                      (m.external_url ? '<a href="' + m.external_url + '" target="_blank" class="text-amber-600 hover:text-amber-700" title="Buka Link Eksternal"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>' : '') +
+                      (m.video_url ? '<i class="fa-solid fa-video text-navy-900" title="Ada Video"></i>' : '') +
+                      (m.download_url ? '<i class="fa-solid fa-cloud-arrow-down text-emerald-600" title="Ada Download"></i>' : '') +
+                    '</td>' +
+                    '<td class="p-4 text-right space-x-1">' +
+                      '<button type="button" onclick="editModule(\'' + m.id + '\')" class="p-2 text-slate-500 hover:text-navy-900 rounded-lg hover:bg-slate-100" title="Edit Modul"><i class="fa-regular fa-pen-to-square"></i></button>' +
+                      '<button type="button" onclick="deleteModule(\'' + m.id + '\')" class="p-2 text-slate-500 hover:text-rose-600 rounded-lg hover:bg-slate-100" title="Hapus Modul"><i class="fa-regular fa-trash-can"></i></button>' +
+                    '</td>' +
+                  '</tr>';
+                }).join('') +
+              '</tbody>' +
+            '</table>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    window.openModuleFormModal = function() {
+      var form = document.getElementById('form-manage-module');
+      if (form) form.reset();
+      document.getElementById('mod-id').value = '';
+      document.getElementById('mod-external-url').value = '';
+      document.getElementById('module-form-title').innerText = "Tambah Modul Baru";
+      document.getElementById('modal-module-form').classList.remove('hidden');
+    };
+
+    window.editModule = function(id) {
+      var m = state.modules.find(function(x) { return x.id === id; });
+      if (!m) return;
+      document.getElementById('mod-id').value = m.id;
+      document.getElementById('mod-title').value = m.title;
+      document.getElementById('mod-category').value = m.category;
+      document.getElementById('mod-cover-url').value = m.cover_url || '';
+      document.getElementById('mod-external-url').value = m.external_url || '';
+      document.getElementById('mod-video-url').value = m.video_url || '';
+      document.getElementById('mod-download-url').value = m.download_url || '';
+      document.getElementById('mod-desc').value = m.description;
+      document.getElementById('mod-content-text').value = m.content_text || '';
+      document.getElementById('mod-free-preview').checked = !!m.is_free_preview;
+
+      document.getElementById('module-form-title').innerText = "Perbarui Modul";
+      document.getElementById('modal-module-form').classList.remove('hidden');
+    };
+
+    window.handleSaveModule = async function(e) {
+      if (e) e.preventDefault();
+      var id = document.getElementById('mod-id').value;
+      var modData = {
+        title: document.getElementById('mod-title').value.trim(),
+        category: document.getElementById('mod-category').value,
+        cover_url: document.getElementById('mod-cover-url').value.trim(),
+        external_url: document.getElementById('mod-external-url').value.trim(),
+        video_url: document.getElementById('mod-video-url').value.trim(),
+        download_url: document.getElementById('mod-download-url').value.trim(),
+        description: document.getElementById('mod-desc').value.trim(),
+        content_text: document.getElementById('mod-content-text').value.trim(),
+        is_free_preview: document.getElementById('mod-free-preview').checked,
+        order_index: state.modules.length + 1
+      };
+
+      if (!IS_PREVIEW && supabaseClient) {
+        try {
+          if (id) {
+            await supabaseClient.from('modules').update(modData).eq('id', id);
+          } else {
+            var dbRes = await supabaseClient.from('modules').insert([modData]).select();
+            if (dbRes.data && dbRes.data[0]) modData.id = dbRes.data[0].id;
+          }
+        } catch (err) {
+          console.warn("Supabase simpan modul error:", err);
+        }
+      }
+
+      if (id) {
+        var idx = state.modules.findIndex(function(m) { return m.id === id; });
+        if (idx !== -1) state.modules[idx] = Object.assign({}, state.modules[idx], modData);
+        showToast("Modul berhasil diperbarui!");
+      } else {
+        modData.id = modData.id || ('mod-' + Date.now());
+        state.modules.push(modData);
+        showToast("Modul baru berhasil ditambahkan!");
+      }
+
+      setStore('modules', state.modules);
+      closeModal('modal-module-form');
+      renderApp();
+    };
+
+    window.deleteModule = function(id) {
+      customConfirm("Hapus Modul", "Apakah Anda yakin ingin menghapus modul ini secara permanen?", async function() {
+        if (!IS_PREVIEW && supabaseClient) {
+          try {
+            await supabaseClient.from('modules').delete().eq('id', id);
+          } catch (e) {}
+        }
+        state.modules = state.modules.filter(function(m) { return m.id !== id; });
+        state.accessGrants = state.accessGrants.filter(function(g) { return g.module_id !== id; });
+        setStore('modules', state.modules);
+        setStore('access_grants', state.accessGrants);
+        showToast("Modul telah dihapus.", "info");
+        renderApp();
+      });
+    };
+
+    // ==========================================
+    // 13. VIEW: MESSAGES (MANAJEMEN MEMBER & HAK AKSES)
+    // ==========================================
+    function renderMessagesView() {
+      if (!state.currentUser || state.currentUser.role !== 'admin') {
+        return '<p class="p-8 text-center text-xs text-rose-500 font-bold">Akses khusus Administrator.</p>';
+      }
+
+      return '<div class="space-y-6">' +
+        '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">' +
+          '<div>' +
+            '<h2 class="text-xl font-extrabold text-slate-800">Manajemen Member & Hak Akses</h2>' +
+            '<p class="text-xs text-slate-500 mt-0.5">Kelola data peserta, ubah sandi, serta kontrol buka/kunci modul</p>' +
+          '</div>' +
+          '<div class="flex items-center gap-2.5">' +
+            '<span class="text-xs font-bold text-slate-700 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-sm">' +
+              'Total Peserta: ' + state.members.length +
+            '</span>' +
+            '<button type="button" onclick="openAddMemberModal()" class="px-4 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-950 text-white font-bold text-xs shadow-md flex items-center gap-1.5">' +
+              '<i class="fa-solid fa-user-plus text-xs"></i> Tambah Member' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="dashboard-card overflow-hidden">' +
+          '<div class="overflow-x-auto">' +
+            '<table class="w-full text-left text-xs">' +
+              '<thead class="bg-slate-50 text-slate-500 font-bold border-b border-slate-100">' +
+                '<tr>' +
+                  '<th class="p-4">Peserta</th>' +
+                  '<th class="p-4">WhatsApp</th>' +
+                  '<th class="p-4">Status Akun</th>' +
+                  '<th class="p-4">Modul Terbuka</th>' +
+                  '<th class="p-4 text-right">Tindakan & Akses</th>' +
+                '</tr>' +
+              '</thead>' +
+              '<tbody class="divide-y divide-slate-100 text-slate-700">' +
+                (state.members.length > 0 ? state.members.map(function(mem) {
+                  var activeCount = state.accessGrants.filter(function(g) { 
+                    return String(g.member_id) === String(mem.id) && 
+                           (g.is_granted === true || g.is_granted === 'true' || g.is_granted === 1); 
+                  }).length;
+
+                  return '<tr class="hover:bg-slate-50/50 transition-colors">' +
+                    '<td class="p-4 flex items-center gap-3">' +
+                      '<div class="w-8 h-8 rounded-full bg-navy-900 text-white flex items-center justify-center font-bold text-xs shrink-0">' + (mem.full_name ? mem.full_name[0].toUpperCase() : 'U') + '</div>' +
+                      '<div class="min-w-0">' +
+                        '<p class="font-bold text-slate-800 truncate">' + mem.full_name + '</p>' +
+                        '<p class="text-[11px] text-slate-400">@' + mem.username + '</p>' +
+                      '</div>' +
+                    '</td>' +
+                    '<td class="p-4">' +
+                      '<a href="https://wa.me/' + mem.whatsapp + '" target="_blank" class="inline-flex items-center gap-1 text-emerald-600 hover:underline font-semibold">' +
+                        '<i class="fa-brands fa-whatsapp text-emerald-500"></i> ' + mem.whatsapp +
+                      '</a>' +
+                    '</td>' +
+                    '<td class="p-4">' +
+                      '<button type="button" onclick="toggleMemberActiveStatus(\'' + mem.id + '\')" title="Klik untuk ubah status aktif/blokir" class="px-2.5 py-1 rounded-lg text-[10px] font-bold ' + (mem.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700') + '">' +
+                        (mem.is_active ? '● Aktif' : '● Diblokir') +
+                      '</button>' +
+                    '</td>' +
+                    '<td class="p-4"><span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold">' + activeCount + ' Modul Terbuka</span></td>' +
+                    '<td class="p-4 text-right">' +
+                      '<div class="flex items-center justify-end gap-1.5">' +
+                        '<button type="button" onclick="openAccessControlModal(\'' + mem.id + '\')" title="Kontrol Izin Akses Modul" class="px-3 py-1.5 rounded-xl bg-navy-900 hover:bg-navy-950 text-white font-bold text-xs shadow-sm flex items-center gap-1.5">' +
+                          '<i class="fa-solid fa-sliders text-xs text-amber-400"></i> Izin' +
+                        '</button>' +
+                        '<button type="button" onclick="openEditMemberModal(\'' + mem.id + '\')" title="Edit Data Member & Sandi" class="p-2 text-slate-500 hover:text-navy-900 rounded-lg hover:bg-slate-100 transition-colors">' +
+                          '<i class="fa-regular fa-pen-to-square text-sm"></i>' +
+                        '</button>' +
+                        '<button type="button" onclick="deleteMember(\'' + mem.id + '\')" title="Hapus Member Permanen" class="p-2 text-slate-500 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors">' +
+                          '<i class="fa-regular fa-trash-can text-sm"></i>' +
+                        '</button>' +
+                      '</div>' +
+                    '</td>' +
+                  '</tr>';
+                }).join('') : '<tr><td colspan="5" class="p-8 text-center text-slate-400 text-xs">Belum ada data member terdaftar.</td></tr>') +
+              '</tbody>' +
+            '</table>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    // Modal Member Add & Edit Operations
+    window.openAddMemberModal = function() {
+      var form = document.getElementById('form-manage-member');
+      if (form) form.reset();
+      document.getElementById('mem-edit-id').value = '';
+      document.getElementById('mem-edit-status').value = 'active';
+      document.getElementById('member-form-title').innerHTML = '<i class="fa-solid fa-user-plus text-navy-900 mr-2"></i><span>Tambah Member Baru</span>';
+      document.getElementById('modal-member-form').classList.remove('hidden');
+    };
+
+    window.openEditMemberModal = function(id) {
+      var mem = state.members.find(function(m) { return String(m.id) === String(id); });
+      if (!mem) return;
+
+      document.getElementById('mem-edit-id').value = mem.id;
+      document.getElementById('mem-edit-name').value = mem.full_name || '';
+      document.getElementById('mem-edit-username').value = mem.username || '';
+      document.getElementById('mem-edit-wa').value = mem.whatsapp || '';
+      document.getElementById('mem-edit-password').value = mem.password || '';
+      document.getElementById('mem-edit-status').value = mem.is_active ? 'active' : 'blocked';
+
+      document.getElementById('member-form-title').innerHTML = '<i class="fa-solid fa-user-pen text-navy-900 mr-2"></i><span>Perbarui Data Member</span>';
+      document.getElementById('modal-member-form').classList.remove('hidden');
+    };
+
+    window.handleSaveMember = async function(e) {
+      if (e) e.preventDefault();
+      var id = document.getElementById('mem-edit-id').value;
+      var fullName = document.getElementById('mem-edit-name').value.trim();
+      var username = document.getElementById('mem-edit-username').value.trim().toLowerCase();
+      var whatsapp = document.getElementById('mem-edit-wa').value.trim();
+      var password = document.getElementById('mem-edit-password').value;
+      var isActive = document.getElementById('mem-edit-status').value === 'active';
+
+      if (!fullName || !username || !whatsapp || !password) {
+        showToast("Harap isi semua kolom wajib!", "error");
+        return;
+      }
+
+      var isDuplicate = state.members.some(function(m) {
+        return m.username === username && String(m.id) !== String(id);
+      });
+      if (isDuplicate) {
+        showToast("Username ini sudah digunakan oleh peserta lain!", "error");
+        return;
+      }
+
+      var memberPayload = {
+        full_name: fullName,
+        username: username,
+        whatsapp: whatsapp,
+        password: password,
+        is_active: isActive
+      };
+
+      if (!IS_PREVIEW && supabaseClient) {
+        try {
+          if (id) {
+            await supabaseClient.from('members').update(memberPayload).eq('id', id);
+          } else {
+            var dbRes = await supabaseClient.from('members').insert([memberPayload]).select();
+            if (dbRes.data && dbRes.data[0]) {
+              id = dbRes.data[0].id;
+            }
+          }
+        } catch (err) {
+          console.warn("Supabase member save error:", err);
+        }
+      }
+
+      if (id) {
+        var idx = state.members.findIndex(function(m) { return String(m.id) === String(id); });
+        if (idx !== -1) {
+          state.members[idx] = Object.assign({}, state.members[idx], memberPayload);
+          showToast("Data member berhasil diperbarui!", "success");
+        } else {
+          memberPayload.id = id;
+          memberPayload.created_at = new Date().toISOString();
+          state.members.push(memberPayload);
+          showToast("Member baru berhasil ditambahkan!", "success");
+        }
+      } else {
+        memberPayload.id = 'mem-' + Date.now();
+        memberPayload.created_at = new Date().toISOString();
+        state.members.push(memberPayload);
+        showToast("Member baru berhasil ditambahkan!", "success");
+      }
+
+      setStore('members', state.members);
+      closeModal('modal-member-form');
+      renderApp();
+    };
+
+    window.deleteMember = function(id) {
+      var mem = state.members.find(function(m) { return String(m.id) === String(id); });
+      var name = mem ? mem.full_name : 'peserta ini';
+
+      customConfirm("Hapus Member", "Apakah Anda yakin ingin menghapus peserta '" + name + "'? Seluruh hak akses modul untuk member ini juga akan dihapus.", async function() {
+        if (!IS_PREVIEW && supabaseClient) {
+          try {
+            await supabaseClient.from('member_module_access').delete().eq('member_id', id);
+            await supabaseClient.from('members').delete().eq('id', id);
+          } catch (e) {
+            console.warn("Supabase member delete error:", e);
+          }
+        }
+
+        state.members = state.members.filter(function(m) { return String(m.id) !== String(id); });
+        state.accessGrants = state.accessGrants.filter(function(g) { return String(g.member_id) !== String(id); });
+
+        setStore('members', state.members);
+        setStore('access_grants', state.accessGrants);
+        showToast("Member '" + name + "' telah dihapus.", "info");
+        renderApp();
+      });
+    };
+
+    window.toggleMemberActiveStatus = async function(memId) {
+      var mem = state.members.find(function(m) { return String(m.id) === String(memId); });
+      if (!mem) return;
+      mem.is_active = !mem.is_active;
+
+      if (!IS_PREVIEW && supabaseClient) {
+        try {
+          await supabaseClient.from('members').update({ is_active: mem.is_active }).eq('id', memId);
+        } catch (e) {}
+      }
+      setStore('members', state.members);
+      showToast("Status akun " + mem.full_name + " diubah menjadi " + (mem.is_active ? 'Aktif' : 'Diblokir'));
+      renderApp();
+    };
+
+    window.openAccessControlModal = function(memberId) {
+      var mem = state.members.find(function(m) { return String(m.id) === String(memberId); });
+      if (!mem) return;
+
+      state.activeMemberForAccess = mem;
+      document.getElementById('target-member-name').innerText = mem.full_name + ' (@' + mem.username + ')';
+      
+      renderAccessModuleChecklist();
+      document.getElementById('modal-manage-access').classList.remove('hidden');
+    };
+
+    window.closeAccessControlModal = function() {
+      closeModal('modal-manage-access');
+      state.activeMemberForAccess = null;
+      renderApp();
+    };
+
+    function renderAccessModuleChecklist() {
+      var mem = state.activeMemberForAccess;
+      var container = document.getElementById('member-access-module-list');
+      if (!mem || !container) return;
+
+      container.innerHTML = state.modules.map(function(mod) {
+        var hasAccess = isMemberGranted(mod.id, mem.id);
+        var isFree = mod.is_free_preview;
+
+        return '<div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:bg-white transition-all">' +
+          '<div class="flex items-center gap-3 min-w-0 pr-3">' +
+            '<div class="w-9 h-9 rounded-lg bg-slate-200 overflow-hidden shrink-0">' +
+              '<img src="' + (mod.cover_url || '') + '" class="w-full h-full object-cover" />' +
+            '</div>' +
+            '<div class="min-w-0">' +
+              '<p class="font-bold text-slate-800 text-xs truncate">' + mod.title + '</p>' +
+              '<div class="flex items-center gap-2 mt-0.5">' +
+                '<span class="text-[10px] text-slate-400">' + mod.category + '</span>' +
+                (isFree ? '<span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">Gratis Global</span>' : '') +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div>' +
+            (isFree 
+              ? '<span class="text-[11px] font-semibold text-slate-400 italic">Otomatis Terbuka</span>'
+              : '<label class="relative inline-flex items-center cursor-pointer">' +
+                  '<input type="checkbox" onchange="toggleModuleGrant(\'' + mem.id + '\', \'' + mod.id + '\', this.checked)" ' + (hasAccess ? 'checked' : '') + ' class="sr-only switch-input" />' +
+                  '<div class="w-11 h-6 bg-slate-200 switch-bg peer-focus:outline-none rounded-full transition-colors"></div>' +
+                  '<div class="switch-dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform"></div>' +
+                '</label>') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    window.toggleModuleGrant = async function(memberId, moduleId, isGranted, isSilent) {
+      var grantIndex = state.accessGrants.findIndex(function(g) {
+        return String(g.member_id) === String(memberId) && String(g.module_id) === String(moduleId);
+      });
+
+      if (isGranted) {
+        if (grantIndex === -1) {
+          var newGrant = {
+            id: 'acc-' + Date.now(),
+            member_id: memberId,
+            module_id: moduleId,
+            is_granted: true,
+            granted_at: new Date().toISOString()
+          };
+          state.accessGrants.push(newGrant);
+
+          if (!IS_PREVIEW && supabaseClient) {
+            try {
+              await supabaseClient.from('member_module_access').upsert([{
+                member_id: memberId,
+                module_id: moduleId,
+                is_granted: true
+              }], { onConflict: 'member_id,module_id' });
+            } catch (e) {
+              console.warn("Supabase upsert access warning:", e);
+            }
+          }
+        } else {
+          state.accessGrants[grantIndex].is_granted = true;
+          if (!IS_PREVIEW && supabaseClient) {
+            try {
+              await supabaseClient.from('member_module_access').upsert([{
+                member_id: memberId,
+                module_id: moduleId,
+                is_granted: true
+              }], { onConflict: 'member_id,module_id' });
+            } catch (e) {}
+          }
+        }
+        if (!isSilent) showToast("Akses modul dibuka untuk peserta ini.", "success");
+      } else {
+        if (grantIndex !== -1) {
+          state.accessGrants.splice(grantIndex, 1);
+        }
+        state.accessGrants = state.accessGrants.filter(function(g) {
+          return !(String(g.member_id) === String(memberId) && String(g.module_id) === String(moduleId));
+        });
+
+        if (!IS_PREVIEW && supabaseClient) {
+          try {
+            await supabaseClient.from('member_module_access').delete().eq('member_id', memberId).eq('module_id', moduleId);
+          } catch (e) {}
+        }
+        if (!isSilent) showToast("Akses modul dikunci.", "info");
+      }
+
+      setStore('access_grants', state.accessGrants);
+    };
+
+    window.bulkToggleMemberAccess = async function(shouldGrant) {
+      var mem = state.activeMemberForAccess;
+      if (!mem) return;
+
+      for (var i = 0; i < state.modules.length; i++) {
+        var mod = state.modules[i];
+        if (!mod.is_free_preview) {
+          await toggleModuleGrant(mem.id, mod.id, shouldGrant, true);
+        }
+      }
+      renderAccessModuleChecklist();
+      showToast(shouldGrant ? "Semua modul berhasil dibuka!" : "Semua modul telah dikunci!", "success");
+    };
+
+    // ==========================================
+    // 14. VIEW: NOTIFICATION & SETTINGS
+    // ==========================================
+    function renderNotificationView() {
+      return '<div class="max-w-2xl mx-auto space-y-6">' +
+        '<div class="dashboard-card p-6 sm:p-8 space-y-5">' +
+          '<h3 class="text-base font-bold text-slate-800 flex items-center gap-2">' +
+            '<i class="fa-solid fa-sliders text-accent-orange"></i>' +
+            'Pengaturan Nomor WhatsApp Administrator' +
+          '</h3>' +
+          '<p class="text-xs text-slate-500 leading-relaxed">' +
+            'Nomor ini adalah tujuan pesan saat peserta mengklik tombol "Minta Akses Admin" pada modul yang masih terkunci.' +
+          '</p>' +
+          '<div>' +
+            '<label class="block text-xs font-semibold text-slate-700 mb-1">Nomor WhatsApp (Kode Negara, misal: 6281234567890)</label>' +
+            '<div class="flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">' +
+              '<i class="fa-brands fa-whatsapp text-emerald-500 mr-2 text-sm"></i>' +
+              '<input type="text" id="setting-admin-wa" value="' + state.adminWa + '" class="text-xs w-full bg-transparent focus:outline-none" />' +
+            '</div>' +
+          '</div>' +
+          '<button type="button" onclick="saveAppSettings()" class="px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-950 text-white font-bold text-xs shadow-md">' +
+            'Simpan Nomor WhatsApp' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    window.saveAppSettings = function() {
+      var val = document.getElementById('setting-admin-wa').value.trim();
+      if (!val) return;
+      state.adminWa = val;
+      setStore('admin_wa', val);
+      showToast("Nomor WhatsApp Admin berhasil diperbarui!");
+    };
+
+    // ==========================================
+    // 15. GERBANG LOGIN (AUTH GATEWAY)
+    // ==========================================
+    function renderAuthGateway() {
+      var isAdmin = state.authGatewayTab === 'admin';
+      return '<div class="min-h-full w-full flex items-center justify-center p-4 py-8">' +
+        '<div class="dashboard-card w-full max-w-md p-6 sm:p-8 shadow-2xl border-none">' +
+          
+          '<div class="text-center mb-6">' +
+            '<div class="w-14 h-14 rounded-2xl bg-navy-900 text-white flex items-center justify-center mx-auto mb-3 text-2xl shadow-lg">' +
+              '<i class="fa-solid fa-graduation-cap"></i>' +
+            '</div>' +
+            '<h2 class="text-2xl font-black text-slate-800 tracking-tight">wanBOTT</h2>' +
+            '<p class="text-xs text-slate-500 mt-1">LMS & Kontrol Izin Akses Produk Digital</p>' +
+          '</div>' +
+
+          '<div class="flex items-center p-1 bg-slate-100 rounded-xl mb-6">' +
+            '<button type="button" onclick="switchGatewayTab(\'admin\')" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all ' +
+              (isAdmin ? 'bg-white text-navy-900 shadow-sm' : 'text-slate-500') + '">' +
+              '<i class="fa-solid fa-shield-halved mr-1.5 text-navy-900"></i> Administrator' +
+            '</button>' +
+            '<button type="button" onclick="switchGatewayTab(\'member\')" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all ' +
+              (!isAdmin ? 'bg-white text-navy-900 shadow-sm' : 'text-slate-500') + '">' +
+              '<i class="fa-solid fa-user-graduate mr-1.5 text-navy-900"></i> Akun Peserta' +
+            '</button>' +
+          '</div>' +
+
+          (isAdmin ? (
+            '<form onsubmit="handleGatewayAdminSubmit(event)" class="space-y-4">' +
+              '<div>' +
+                '<label class="block text-xs font-bold text-slate-700 mb-1">Email Supabase Auth</label>' +
+                '<div class="flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">' +
+                  '<i class="fa-regular fa-envelope text-slate-400 text-xs mr-2.5"></i>' +
+                  '<input type="email" id="gate-admin-email" required placeholder="admin@domain.com" class="text-xs bg-transparent w-full focus:outline-none text-slate-800" />' +
+                '</div>' +
+              '</div>' +
+
+              '<div>' +
+                '<label class="block text-xs font-bold text-slate-700 mb-1">Kata Sandi</label>' +
+                '<div class="flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">' +
+                  '<i class="fa-solid fa-lock text-slate-400 text-xs mr-2.5"></i>' +
+                  '<input type="password" id="gate-admin-password" required placeholder="••••••••" class="text-xs bg-transparent w-full focus:outline-none text-slate-800" />' +
+                '</div>' +
+              '</div>' +
+
+              '<button type="submit" class="w-full py-3 px-4 rounded-xl font-bold text-xs bg-navy-900 hover:bg-navy-950 text-white shadow-md transition-all flex items-center justify-center gap-2">' +
+                '<i class="fa-solid fa-right-to-bracket"></i> Masuk sebagai Administrator' +
+              '</button>' +
+            '</form>'
+          ) : (
+            '<form onsubmit="handleGatewayMemberSubmit(event)" class="space-y-4">' +
+              (state.isGatewayRegister ? (
+                '<div>' +
+                  '<label class="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap</label>' +
+                  '<div class="flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">' +
+                    '<i class="fa-regular fa-user text-slate-400 text-xs mr-2.5"></i>' +
+                    '<input type="text" id="gate-reg-name" required placeholder="Nama lengkap Anda" class="text-xs bg-transparent w-full focus:outline-none" />' +
+                  '</div>' +
+                '</div>' +
+                '<div>' +
+                  '<label class="block text-xs font-bold text-slate-700 mb-1">Nomor WhatsApp</label>' +
+                  '<div class="flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">' +
+                    '<i class="fa-brands fa-whatsapp text-emerald-500 text-sm mr-2.5"></i>' +
+                    '<input type="tel" id="gate-reg-wa" required placeholder="081234567890" class="text-xs bg-transparent w-full focus:outline-none" />' +
+                  '</div>' +
+                '</div>'
+              ) : '') +
+
+              '<div>' +
+                '<label class="block text-xs font-bold text-slate-700 mb-1">Username / ID Peserta</label>' +
+                '<div class="flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">' +
+                  '<i class="fa-solid fa-at text-slate-400 text-xs mr-2.5"></i>' +
+                  '<input type="text" id="gate-member-username" required placeholder="username_anda" value="' + (!state.isGatewayRegister ? 'budi' : '') + '" class="text-xs bg-transparent w-full focus:outline-none" />' +
+                '</div>' +
+              '</div>' +
+
+              '<div>' +
+                '<label class="block text-xs font-bold text-slate-700 mb-1">Kata Sandi</label>' +
+                '<div class="flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">' +
+                  '<i class="fa-solid fa-lock text-slate-400 text-xs mr-2.5"></i>' +
+                  '<input type="password" id="gate-member-password" required placeholder="••••••••" value="' + (!state.isGatewayRegister ? '123' : '') + '" class="text-xs bg-transparent w-full focus:outline-none" />' +
+                '</div>' +
+              '</div>' +
+
+              '<button type="submit" class="w-full py-3 px-4 rounded-xl font-bold text-xs bg-accent-orange hover:bg-amber-600 text-white shadow-md transition-all">' +
+                (state.isGatewayRegister ? 'Daftar & Buat Akun Baru' : 'Masuk Akun Peserta') +
+              '</button>' +
+
+              '<div class="text-center pt-2">' +
+                '<p class="text-xs text-slate-500">' +
+                  (state.isGatewayRegister ? 'Sudah memiliki akun?' : 'Belum memiliki akun peserta?') +
+                  '<button type="button" onclick="toggleGatewayRegisterMode()" class="text-navy-900 font-bold hover:underline ml-1">' +
+                    (state.isGatewayRegister ? 'Masuk di sini' : 'Daftar sekarang') +
+                  '</button>' +
+                '</p>' +
+              '</div>' +
+            '</form>'
+          )) +
+
+          '<div class="mt-6 pt-5 border-t border-slate-100 text-center">' +
+            '<button type="button" onclick="continueAsGuest()" class="text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors inline-flex items-center gap-1.5">' +
+              '<span>Atau masuk sebagai Tamu (Lihat Katalog Saja)</span>' +
+              '<i class="fa-solid fa-arrow-right text-[10px]"></i>' +
+            '</button>' +
+          '</div>' +
+
+        '</div>' +
+      '</div>';
+    }
+
+    // ==========================================
+    // 16. MAIN ROUTER RENDER
+    // ==========================================
+    function renderApp() {
+      var sidebar = document.getElementById('app-sidebar');
+      var bottomNav = document.getElementById('mobile-bottom-nav');
+      var header = document.getElementById('app-header');
+      var main = document.getElementById('main-content-area');
+
+      if (!state.currentUser && !state.allowGuestBrowse) {
+        if (sidebar) sidebar.classList.add('!hidden');
+        if (bottomNav) bottomNav.classList.add('!hidden');
+        if (header) header.classList.add('!hidden');
+        if (main) {
+          main.className = "flex-1 overflow-y-auto p-0 pb-0";
+          main.innerHTML = renderAuthGateway();
+        }
+        return;
+      }
+
+      if (sidebar) sidebar.classList.remove('!hidden');
+      if (bottomNav) bottomNav.classList.remove('!hidden');
+      if (header) header.classList.remove('!hidden');
+      if (main) {
+        main.className = "flex-1 overflow-y-auto px-6 md:px-10 pb-24 md:pb-10";
+      }
+
+      renderNavigation();
+
+      switch (state.currentPage) {
+        case 'home':
+        case 'graph':
+          main.innerHTML = renderHomeDashboard();
+          break;
+        case 'catalog':
+          main.innerHTML = renderCatalogView(false);
+          break;
+        case 'file':
+          main.innerHTML = renderFileView();
+          break;
+        case 'messages':
+          main.innerHTML = renderMessagesView();
+          break;
+        case 'view-module':
+          main.innerHTML = renderModuleViewer();
+          break;
+        case 'notification':
+          main.innerHTML = renderNotificationView();
+          break;
+        default:
+          main.innerHTML = renderHomeDashboard();
+      }
+    }
+
+    // ==========================================
+    // 17. SINKRONISASI SUPABASE DI LATAR BELAKANG
+    // ==========================================
+    async function syncSupabaseBackground() {
+      if (IS_PREVIEW || !supabaseClient) return;
+
+      try {
+        var mods = await supabaseClient.from('modules').select('*').order('order_index');
+        if (mods.data && mods.data.length) {
+          state.modules = mods.data;
+          setStore('modules', state.modules);
+        }
+
+        var mems = await supabaseClient.from('members').select('*');
+        if (mems.data && mems.data.length) {
+          state.members = mems.data;
+          setStore('members', state.members);
+        }
+
+        var access = await supabaseClient.from('member_module_access').select('*');
+        if (access.data && !access.error) {
+          if (access.data.length > 0) {
+            state.accessGrants = access.data;
+            setStore('access_grants', state.accessGrants);
+          }
+        }
+
+        renderApp();
+      } catch (err) {
+        console.warn("Sinkronisasi Supabase ditunda:", err);
+      }
+    }
+
+    // ==========================================
+    // 18. INITIALIZATION BOOTSTRAP
+    // ==========================================
+    function bootstrapApplication() {
+      renderApp();
+      syncSupabaseBackground();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootstrapApplication);
+    } else {
+      bootstrapApplication();
+    }
+  </script>
+
+</!doctype>
