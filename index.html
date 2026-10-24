@@ -165,10 +165,10 @@
     <aside id="app-sidebar" class="fixed md:static inset-y-0 left-0 z-50 md:z-20 w-64 sidebar-navy h-full shrink-0 shadow-2xl flex flex-col transition-all duration-300 -translate-x-full md:translate-x-0 md:flex">
       <!-- Profile Box di Bagian Atas Sidebar -->
       <div class="pt-8 pb-6 px-6 flex flex-col items-center text-center border-b border-white/10 shrink-0">
-        <div class="w-16 h-16 rounded-2xl bg-white shadow-lg overflow-hidden flex items-center justify-center mb-4">
+        <div class="w-20 h-20 rounded-2xl bg-white shadow-lg overflow-hidden flex items-center justify-center mb-4">
           <img data-app-logo alt="wanBOTT" class="w-full h-full object-contain" />
         </div>
-        <div class="relative mb-3">
+        <div class="relative mb-3 hidden">
           <div id="sidebar-avatar-circle" class="w-20 h-20 rounded-full bg-navy-800 text-white flex items-center justify-center text-3xl font-extrabold shadow-inner border-2 border-white/20">
             <i class="fa-solid fa-user"></i>
           </div>
@@ -202,9 +202,6 @@
       <header id="app-header" class="px-6 md:px-10 py-5 flex items-center justify-between shrink-0">
         <!-- Page Title & Mobile Brand -->
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-white shadow overflow-hidden flex items-center justify-center">
-            <img data-app-logo alt="wanBOTT" class="w-full h-full object-contain" />
-          </div>
           <h1 id="topbar-page-title" class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
             Dashboard Admin
           </h1>
@@ -456,8 +453,8 @@
     // 1. KONFIGURASI SUPABASE & SAKELAR
     // ==========================================
     var IS_PREVIEW = false; // Set false jika sudah terhubung ke database Supabase
-    var SUPABASE_URL = "https://your-project.supabase.co";
-    var SUPABASE_ANON_KEY = "your-anon-key";
+    var SUPABASE_URL = "https://kwosvqgejjqsuhcepchb.supabase.co";
+    var SUPABASE_ANON_KEY = "sb_publishable_HpwWiSf6tyx2yspUUGVqCQ_ObVwKzz1";
 
     var supabaseClient = null;
     if (!IS_PREVIEW && window.supabase && SUPABASE_URL && !SUPABASE_URL.includes("your-project")) {
