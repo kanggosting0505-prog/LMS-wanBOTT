@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>wanBOTT - LMS & Digital Product Hub</title>
 
   <!-- PWA: Manifest, Ikon & Meta (Add to Home Screen) -->
@@ -91,9 +91,12 @@
     #main-content-area { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 
     /* Cegah iOS zoom otomatis saat mengetik di form */
-    input, select, textarea { font-size: 16px; }
-    @media (min-width: 768px) {
-      input, select, textarea { font-size: 0.75rem; }
+    @media (max-width: 767px) {
+      input, select, textarea { font-size: 16px !important; }
+    }
+    html, body {
+      touch-action: pan-x pan-y; /* kunci pinch-zoom & double-tap zoom */
+      max-width: 100vw;
     }
 
     /* Tablet: sidebar lebih ramping */
@@ -2005,6 +2008,7 @@
                 '<div class="flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">' +
                   '<i class="fa-solid fa-lock text-slate-400 text-xs mr-2.5"></i>' +
                   '<input type="password" id="gate-admin-password" required placeholder="••••••••" class="text-xs bg-transparent w-full focus:outline-none text-slate-800" />' +
+                  '<button type="button" onclick="togglePasswordVisibility(\'gate-admin-password\', this)" aria-label="Tampilkan kata sandi" class="ml-2 px-1 text-slate-400 hover:text-slate-700 shrink-0 focus:outline-none"><i class="fa-regular fa-eye text-sm"></i></button>' +
                 '</div>' +
               '</div>' +
 
@@ -2044,6 +2048,7 @@
                 '<div class="flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">' +
                   '<i class="fa-solid fa-lock text-slate-400 text-xs mr-2.5"></i>' +
                   '<input type="password" id="gate-member-password" required placeholder="••••••••" value="' + (!state.isGatewayRegister ? '123' : '') + '" class="text-xs bg-transparent w-full focus:outline-none" />' +
+                  '<button type="button" onclick="togglePasswordVisibility(\'gate-member-password\', this)" aria-label="Tampilkan kata sandi" class="ml-2 px-1 text-slate-400 hover:text-slate-700 shrink-0 focus:outline-none"><i class="fa-regular fa-eye text-sm"></i></button>' +
                 '</div>' +
               '</div>' +
 
@@ -2076,6 +2081,25 @@
     // ==========================================
     // 16. MAIN ROUTER RENDER
     // ==========================================
+    // Tampilkan / sembunyikan kata sandi
+    window.togglePasswordVisibility = function(inputId, btn) {
+      var input = document.getElementById(inputId);
+      if (!input) return;
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      var icon = btn.querySelector('i');
+      if (icon) icon.className = 'fa-regular ' + (show ? 'fa-eye-slash' : 'fa-eye') + ' text-sm';
+      btn.setAttribute('aria-label', show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+    };
+
+    // Kunci zoom (iOS Safari mengabaikan user-scalable=no)
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach(function(ev) {
+      document.addEventListener(ev, function(e) { e.preventDefault(); }, { passive: false });
+    });
+    document.addEventListener('touchmove', function(e) {
+      if (e.touches && e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+
     // Logo aplikasi diambil dari ikon tertanam (data URI) di <head>
     function applyAppLogo() {
       var link = document.querySelector('link[rel="apple-touch-icon"]');
