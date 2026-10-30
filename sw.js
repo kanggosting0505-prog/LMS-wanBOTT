@@ -1,8 +1,13 @@
-const CACHE = 'wanbott-v1';
+const CACHE = 'wanbott-v6';
 const CORE = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+  // Satu file gagal di-cache tidak boleh menggagalkan seluruh instalasi service worker
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => Promise.all(CORE.map(u => c.add(u).catch(() => {}))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', e => {
@@ -12,8 +17,7 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Network-first untuk halaman (data selalu terbaru), fallback ke cache saat offline.
-// Request ke Supabase tidak di-cache.
+// Network-first (data selalu terbaru), fallback ke cache saat offline. Supabase tidak di-cache.
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
@@ -21,7 +25,7 @@ self.addEventListener('fetch', e => {
   if (url.hostname.endsWith('supabase.co')) return;
   e.respondWith(
     fetch(req).then(res => {
-      if (res.ok && (url.origin === location.origin)) {
+      if (res.ok && url.origin === location.origin) {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(req, copy));
       }
