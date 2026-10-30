@@ -2251,6 +2251,126 @@
     }
 
     // ==========================================
+    // 17b. PWA: DIAGNOSA & MANIFEST CADANGAN
+    // ==========================================
+    var pwaState = { promptSeen: false };
+
+    function checkPwaUrl(url, kind) {
+      return fetch(url, { cache: 'no-store' }).then(function(res) {
+        if (!res.ok) return { ok: false, detail: 'HTTP ' + res.status + ' (file tidak ditemukan)' };
+        var ct = (res.headers.get('content-type') || '').toLowerCase();
+        if (kind === 'json') {
+          return res.text().then(function(t) {
+            try { JSON.parse(t); return { ok: true, detail: 'Ditemukan' }; }
+            catch (e) { return { ok: false, detail: 'Bukan JSON valid (server mengirim halaman lain)' }; }
+          });
+        }
+        if (kind === 'image') {
+          var okImg = ct.indexOf('image') !== -1;
+          return { ok: okImg, detail: okImg ? 'Ditemukan' : 'Bukan gambar (' + (ct || 'tipe tidak diketahui') + ')' };
+        }
+        var okJs = ct.indexOf('javascript') !== -1 || ct.indexOf('ecmascript') !== -1;
+        return { ok: okJs, detail: okJs ? 'Ditemukan' : 'Bukan file JavaScript (' + (ct || 'tipe tidak diketahui') + ')' };
+      }).catch(function(e) {
+        return { ok: false, detail: 'Tidak bisa diakses: ' + e.message };
+      });
+    }
+
+    // Jika manifest.json / ikon belum ter-upload, buat manifest cadangan dari ikon tertanam
+    function ensureManifest() {
+      if (!window.fetch || !window.Blob || !window.URL) return Promise.resolve();
+      return Promise.all([checkPwaUrl('manifest.json', 'json'), checkPwaUrl('icons/icon-192.png', 'image')]).then(function(r) {
+        if (r[0].ok && r[1].ok) return;
+        var iconEl = document.querySelector('link[rel="apple-touch-icon"]');
+        if (!iconEl) return;
+        var base = location.href.split('#')[0].split('?')[0].replace(/[^\/]*$/, '');
+        var manifest = {
+          name: 'wanBOTT LMS & Digital Product Hub',
+          short_name: 'wanBOTT',
+          description: 'Platform LMS dan Modul Produk Digital',
+          lang: 'id',
+          id: base,
+          start_url: base,
+          scope: base,
+          display: 'standalone',
+          background_color: '#ffffff',
+          theme_color: '#132f4c',
+          icons: [
+            { src: iconEl.href, sizes: '180x180', type: 'image/png', purpose: 'any' },
+            { src: iconEl.href, sizes: '180x180', type: 'image/png', purpose: 'maskable' }
+          ]
+        };
+        var blobUrl = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' }));
+        var old = document.querySelector('link[rel="manifest"]');
+        if (old) old.remove();
+        var nl = document.createElement('link');
+        nl.rel = 'manifest';
+        nl.href = blobUrl;
+        document.head.appendChild(nl);
+        console.warn('[wanBOTT] manifest.json / icons tidak ditemukan di server, memakai manifest cadangan. Upload seluruh isi zip agar ikon install optimal.');
+      });
+    }
+
+    function runPwaDiagnostics() {
+      var hasSW = 'serviceWorker' in navigator;
+      return Promise.all([
+        checkPwaUrl('manifest.json', 'json'),
+        checkPwaUrl('icons/icon-192.png', 'image'),
+        checkPwaUrl('icons/icon-512.png', 'image'),
+        checkPwaUrl('sw.js', 'js'),
+        hasSW ? navigator.serviceWorker.getRegistration().catch(function() { return null; }) : Promise.resolve(null)
+      ]).then(function(r) {
+        return [
+          { label: 'Alamat aman (HTTPS)', ok: !!window.isSecureContext, detail: location.protocol + '//' + location.host,
+            hint: 'Buka lewat alamat https:// dari hosting, bukan file di komputer atau halaman preview.' },
+          { label: 'Dibuka langsung (bukan di dalam frame)', ok: window.self === window.top, detail: window.self === window.top ? 'Ya' : 'Berada di dalam frame/embed',
+            hint: 'Buka alamat aplikasi langsung di Chrome, jangan lewat Canvas, embed, atau iframe.' },
+          { label: 'File manifest.json', ok: r[0].ok, detail: r[0].detail,
+            hint: 'Upload manifest.json ke folder yang sama dengan index.html.' },
+          { label: 'Ikon icons/icon-192.png', ok: r[1].ok, detail: r[1].detail,
+            hint: 'Upload folder icons/ (isinya semua file PNG) ke folder yang sama dengan index.html.' },
+          { label: 'Ikon icons/icon-512.png', ok: r[2].ok, detail: r[2].detail,
+            hint: 'Upload folder icons/ lengkap, termasuk icon-512.png.' },
+          { label: 'File sw.js', ok: r[3].ok, detail: r[3].detail,
+            hint: 'Upload sw.js ke folder yang sama dengan index.html.' },
+          { label: 'Service worker aktif', ok: !!r[4], detail: r[4] ? 'Terdaftar' : (hasSW ? 'Belum terdaftar' : 'Browser tidak mendukung'),
+            hint: 'Setelah sw.js ter-upload, muat ulang halaman dengan Ctrl+Shift+R.' },
+          { label: 'Browser menandai aplikasi bisa dipasang', ok: pwaState.promptSeen || isStandaloneMode(), detail: pwaState.promptSeen ? 'Ya' : (isStandaloneMode() ? 'Sudah terpasang' : 'Belum'),
+            hint: 'Jika semua centang di atas sudah hijau, muat ulang. Jika aplikasi pernah dipasang di perangkat ini, ikon install tidak muncul lagi (cari ikon "buka di aplikasi").' }
+        ];
+      });
+    }
+
+    window.openPwaDiagnostics = function() {
+      var old = document.getElementById('pwa-diag');
+      if (old) old.remove();
+      var wrap = document.createElement('div');
+      wrap.id = 'pwa-diag';
+      wrap.className = 'fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm';
+      wrap.innerHTML =
+        '<div class="dashboard-card w-full max-w-md p-6 max-h-[90vh] overflow-y-auto shadow-2xl border-none">' +
+          '<h3 class="text-base font-bold text-slate-800 flex items-center gap-2 mb-1"><i class="fa-solid fa-stethoscope text-amber-500"></i> Cek Status Instalasi Aplikasi</h3>' +
+          '<p class="text-[11px] text-slate-400 mb-4">Hasil pemeriksaan file PWA di server Anda.</p>' +
+          '<div id="pwa-diag-body" class="space-y-2.5 text-xs text-slate-500">Memeriksa...</div>' +
+          '<div class="pt-4 text-right"><button type="button" onclick="document.getElementById(\'pwa-diag\').remove()" class="px-5 py-2.5 rounded-xl bg-navy-900 text-white font-bold text-xs">Tutup</button></div>' +
+        '</div>';
+      document.getElementById('app-container').appendChild(wrap);
+      runPwaDiagnostics().then(function(checks) {
+        var body = document.getElementById('pwa-diag-body');
+        if (!body) return;
+        body.innerHTML = checks.map(function(c) {
+          return '<div class="p-3 rounded-xl border ' + (c.ok ? 'border-emerald-100 bg-emerald-50/50' : 'border-rose-100 bg-rose-50/60') + '">' +
+            '<div class="flex items-start gap-2">' +
+              '<i class="fa-solid ' + (c.ok ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-rose-500') + ' mt-0.5"></i>' +
+              '<div class="min-w-0"><p class="font-bold text-slate-800">' + c.label + '</p>' +
+              '<p class="text-[11px] text-slate-500">' + c.detail + '</p>' +
+              (c.ok ? '' : '<p class="text-[11px] text-rose-700 mt-1">' + c.hint + '</p>') +
+              '</div></div></div>';
+        }).join('');
+      });
+    };
+
+    // ==========================================
     // 18. PWA: AJAKAN PASANG APLIKASI
     // ==========================================
     var deferredInstallPrompt = null;
@@ -2282,13 +2402,23 @@
       banner.id = 'install-banner';
       banner.className = 'fixed z-[9990] left-4 right-4 md:left-auto md:right-6 md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 flex items-start gap-3';
       banner.style.bottom = 'calc(5rem + env(safe-area-inset-bottom))';
-      var text = mode === 'ios'
-        ? 'Ketuk tombol <strong>Bagikan</strong> (ikon kotak dengan panah ke atas) di Safari, lalu pilih <strong>Tambah ke Layar Utama</strong>.'
-        : 'Pasang di perangkat Anda agar bisa dibuka cepat dari layar utama, tanpa membuka browser.';
-      var actions = mode === 'ios'
-        ? '<button type="button" onclick="hideInstallBanner(true)" class="px-4 py-2 rounded-xl text-xs font-bold bg-navy-900 text-white">Mengerti</button>'
-        : '<button type="button" onclick="triggerInstallApp()" class="px-4 py-2 rounded-xl text-xs font-bold bg-accent-orange hover:bg-amber-600 text-white">Pasang</button>' +
+      var isAdminUser = state.currentUser && state.currentUser.role === 'admin';
+      var isAndroidDevice = /android/i.test(navigator.userAgent);
+      var text, actions;
+      if (mode === 'ios') {
+        text = 'Ketuk tombol <strong>Bagikan</strong> (ikon kotak dengan panah ke atas) di Safari, lalu pilih <strong>Tambah ke Layar Utama</strong>.';
+        actions = '<button type="button" onclick="hideInstallBanner(true)" class="px-4 py-2 rounded-xl text-xs font-bold bg-navy-900 text-white">Mengerti</button>';
+      } else if (mode === 'manual') {
+        text = isAndroidDevice
+          ? 'Ketuk menu <strong>&#8942;</strong> di Chrome, lalu pilih <strong>Instal aplikasi</strong> atau <strong>Tambahkan ke layar utama</strong>.'
+          : 'Klik ikon <strong>Instal</strong> di sisi kanan bar alamat Chrome/Edge, atau buka menu <strong>&#8942;</strong> lalu pilih <strong>Instal wanBOTT</strong>.';
+        actions = '<button type="button" onclick="hideInstallBanner(true)" class="px-4 py-2 rounded-xl text-xs font-bold bg-navy-900 text-white">Mengerti</button>' +
+          (isAdminUser ? '<button type="button" onclick="openPwaDiagnostics()" class="px-3 py-2 rounded-xl text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100">Cek status</button>' : '');
+      } else {
+        text = 'Pasang di perangkat Anda agar bisa dibuka cepat dari layar utama, tanpa membuka browser.';
+        actions = '<button type="button" onclick="triggerInstallApp()" class="px-4 py-2 rounded-xl text-xs font-bold bg-accent-orange hover:bg-amber-600 text-white">Pasang</button>' +
           '<button type="button" onclick="hideInstallBanner(true)" class="px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100">Nanti</button>';
+      }
       banner.innerHTML =
         '<div class="w-12 h-12 rounded-xl bg-white border border-slate-100 shadow-sm overflow-hidden shrink-0 flex items-center justify-center">' +
           '<img data-app-logo alt="wanBOTT" class="w-full h-full object-contain" />' +
@@ -2326,7 +2456,9 @@
     window.addEventListener('beforeinstallprompt', function(e) {
       e.preventDefault();
       deferredInstallPrompt = e;
+      pwaState.promptSeen = true;
       setInstallButtonVisible(true);
+      hideInstallBanner(false);
       if (!isStandaloneMode() && !installDismissedRecently()) showInstallBanner('native');
     });
 
@@ -2338,10 +2470,25 @@
     });
 
     function initInstallPrompt() {
+      ensureManifest();
+      if (location.hash === '#cek-install') setTimeout(openPwaDiagnostics, 800);
+      window.addEventListener('hashchange', function() {
+        if (location.hash === '#cek-install') openPwaDiagnostics();
+      });
       if (isStandaloneMode()) return;
-      if (isIOSDevice() && !installDismissedRecently()) {
-        setTimeout(function() { showInstallBanner('ios'); }, 2500);
+      if (isIOSDevice()) {
+        if (!installDismissedRecently()) setTimeout(function() { showInstallBanner('ios'); }, 2500);
+        return;
       }
+      // Android / laptop: bila browser belum memberi sinyal "bisa dipasang", tampilkan petunjuk manual
+      setTimeout(function() {
+        if (pwaState.promptSeen || installDismissedRecently()) return;
+        showInstallBanner('manual');
+        runPwaDiagnostics().then(function(checks) {
+          var bad = checks.filter(function(c) { return !c.ok; });
+          if (bad.length) console.warn('[wanBOTT] PWA belum siap dipasang:', bad);
+        });
+      }, 5000);
     }
 
     // ==========================================
@@ -2349,8 +2496,8 @@
     // ==========================================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('sw.js').catch(function(e) {
-          console.warn('Service worker gagal didaftarkan:', e);
+        navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function(e) {
+          console.warn('Service worker gagal didaftarkan (pastikan sw.js ter-upload sejajar index.html):', e);
         });
       });
     }
