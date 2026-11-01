@@ -65,6 +65,7 @@ create policy "modules_write" on public.modules for all to authenticated using (
 drop policy if exists "members_read" on public.members;
 drop policy if exists "members_register" on public.members;
 drop policy if exists "members_admin_write" on public.members;
+drop policy if exists "members_admin_delete" on public.members;
 create policy "members_read"        on public.members for select using (true);
 create policy "members_register"    on public.members for insert with check (true);
 create policy "members_admin_write" on public.members for update to authenticated using (true) with check (true);
@@ -78,3 +79,8 @@ create policy "access_admin_write" on public.member_module_access for all to aut
 -- CATATAN: login peserta memakai username + kata sandi biasa di tabel members,
 -- sehingga tabel ini dapat dibaca lewat anon key. Cocok untuk skala kecil/pribadi;
 -- untuk keamanan lebih kuat, sandi sebaiknya di-hash / memakai Supabase Auth.
+
+-- ------------------------------------------------------------
+-- Diagnosa (opsional): lihat semua policy yang aktif
+--   select tablename, policyname, cmd, roles from pg_policies where schemaname = 'public';
+-- ------------------------------------------------------------

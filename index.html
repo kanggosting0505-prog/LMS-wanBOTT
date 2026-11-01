@@ -1522,6 +1522,7 @@
       }
 
       if (!IS_PREVIEW && supabaseClient) {
+        if (!(await ensureAdminSession())) return;
         try {
           var dbRes;
           if (id) {
@@ -1561,15 +1562,62 @@
       renderApp();
     };
 
+    // ----- Helper database: pastikan sesi admin Supabase aktif sebelum menulis -----
+    function isLocalId(id) {
+      return /^(mem|mod|acc)-/.test(String(id));
+    }
+    function isDbConnected() {
+      return !IS_PREVIEW && !!supabaseClient;
+    }
+    async function ensureAdminSession() {
+      if (!isDbConnected()) return true;
+      try {
+        var r = await supabaseClient.auth.getSession();
+        if (r && r.data && r.data.session) return true;
+      } catch (e) {}
+      showToast("Sesi admin ke database tidak aktif. Silakan keluar lalu masuk lagi sebagai Administrator.", "error");
+      return false;
+    }
+    async function verifyAdminSession() {
+      if (!isDbConnected()) return;
+      if (!state.currentUser || state.currentUser.role !== 'admin') return;
+      var ok = false;
+      try {
+        var r = await supabaseClient.auth.getSession();
+        ok = !!(r && r.data && r.data.session);
+      } catch (e) {}
+      if (!ok) {
+        state.currentUser = null;
+        setStore('auth_user', null);
+        state.allowGuestBrowse = false;
+        state.authGatewayTab = 'admin';
+        state.currentPage = 'home';
+        renderApp();
+        showToast("Sesi admin berakhir. Silakan masuk lagi agar perubahan tersimpan ke database.", "error");
+      }
+    }
+
     window.deleteModule = function(id) {
       customConfirm("Hapus Modul", "Apakah Anda yakin ingin menghapus modul ini secara permanen?", async function() {
-        if (!IS_PREVIEW && supabaseClient) {
+        if (isDbConnected() && !isLocalId(id)) {
+          if (!(await ensureAdminSession())) return;
           try {
-            await supabaseClient.from('modules').delete().eq('id', id);
-          } catch (e) {}
+            var r = await supabaseClient.from('modules').delete().eq('id', id).select();
+            if (r.error) {
+              showToast("Gagal menghapus modul di database: " + r.error.message, "error");
+              return;
+            }
+            if (!r.data || r.data.length === 0) {
+              showToast("Modul tidak terhapus di database. Periksa izin (RLS) Supabase atau masuk ulang sebagai admin.", "error");
+              return;
+            }
+          } catch (e) {
+            showToast("Koneksi database bermasalah: " + e.message, "error");
+            return;
+          }
         }
-        state.modules = state.modules.filter(function(m) { return m.id !== id; });
-        state.accessGrants = state.accessGrants.filter(function(g) { return g.module_id !== id; });
+        state.modules = state.modules.filter(function(m) { return String(m.id) !== String(id); });
+        state.accessGrants = state.accessGrants.filter(function(g) { return String(g.module_id) !== String(id); });
         setStore('modules', state.modules);
         setStore('access_grants', state.accessGrants);
         showToast("Modul telah dihapus.", "info");
@@ -1716,36 +1764,47 @@
         is_active: isActive
       };
 
-      if (!IS_PREVIEW && supabaseClient) {
+      var connected = isDbConnected();
+      var updateInPlace = !!id && (!connected || !isLocalId(id));
+      var savedRow = null;
+
+      if (connected) {
+        if (!(await ensureAdminSession())) return;
         try {
-          if (id) {
-            await supabaseClient.from('members').update(memberPayload).eq('id', id);
-          } else {
-            var dbRes = await supabaseClient.from('members').insert([memberPayload]).select();
-            if (dbRes.data && dbRes.data[0]) {
-              id = dbRes.data[0].id;
-            }
+          var dbRes = updateInPlace
+            ? await supabaseClient.from('members').update(memberPayload).eq('id', id).select()
+            : await supabaseClient.from('members').insert([memberPayload]).select();
+          if (dbRes.error) {
+            showToast("Gagal menyimpan member ke database: " + dbRes.error.message, "error");
+            return;
           }
+          if (!dbRes.data || dbRes.data.length === 0) {
+            showToast("Perubahan tidak tersimpan di database. Periksa izin (RLS) Supabase atau masuk ulang sebagai admin.", "error");
+            return;
+          }
+          savedRow = dbRes.data[0];
         } catch (err) {
-          console.warn("Supabase member save error:", err);
+          showToast("Koneksi database bermasalah: " + err.message, "error");
+          return;
         }
       }
 
-      if (id) {
+      if (updateInPlace) {
         var idx = state.members.findIndex(function(m) { return String(m.id) === String(id); });
         if (idx !== -1) {
           state.members[idx] = Object.assign({}, state.members[idx], memberPayload);
-          showToast("Data member berhasil diperbarui!", "success");
         } else {
-          memberPayload.id = id;
-          memberPayload.created_at = new Date().toISOString();
-          state.members.push(memberPayload);
-          showToast("Member baru berhasil ditambahkan!", "success");
+          state.members.push(Object.assign({}, memberPayload, { id: id, created_at: new Date().toISOString() }));
         }
+        showToast("Data member berhasil diperbarui!", "success");
       } else {
-        memberPayload.id = 'mem-' + Date.now();
-        memberPayload.created_at = new Date().toISOString();
-        state.members.push(memberPayload);
+        if (id) {
+          state.members = state.members.filter(function(m) { return String(m.id) !== String(id); });
+        }
+        state.members.push(Object.assign({}, memberPayload, {
+          id: savedRow ? savedRow.id : ('mem-' + Date.now()),
+          created_at: (savedRow && savedRow.created_at) || new Date().toISOString()
+        }));
         showToast("Member baru berhasil ditambahkan!", "success");
       }
 
@@ -1759,12 +1818,26 @@
       var name = mem ? mem.full_name : 'peserta ini';
 
       customConfirm("Hapus Member", "Apakah Anda yakin ingin menghapus peserta '" + name + "'? Seluruh hak akses modul untuk member ini juga akan dihapus.", async function() {
-        if (!IS_PREVIEW && supabaseClient) {
+        if (isDbConnected() && !isLocalId(id)) {
+          if (!(await ensureAdminSession())) return;
           try {
-            await supabaseClient.from('member_module_access').delete().eq('member_id', id);
-            await supabaseClient.from('members').delete().eq('id', id);
+            var r1 = await supabaseClient.from('member_module_access').delete().eq('member_id', id);
+            if (r1.error) {
+              showToast("Gagal menghapus hak akses member: " + r1.error.message, "error");
+              return;
+            }
+            var r2 = await supabaseClient.from('members').delete().eq('id', id).select();
+            if (r2.error) {
+              showToast("Gagal menghapus member di database: " + r2.error.message, "error");
+              return;
+            }
+            if (!r2.data || r2.data.length === 0) {
+              showToast("Member tidak terhapus di database. Periksa izin (RLS) Supabase atau masuk ulang sebagai admin.", "error");
+              return;
+            }
           } catch (e) {
-            console.warn("Supabase member delete error:", e);
+            showToast("Koneksi database bermasalah: " + e.message, "error");
+            return;
           }
         }
 
@@ -1781,13 +1854,27 @@
     window.toggleMemberActiveStatus = async function(memId) {
       var mem = state.members.find(function(m) { return String(m.id) === String(memId); });
       if (!mem) return;
-      mem.is_active = !mem.is_active;
+      var newStatus = !mem.is_active;
 
-      if (!IS_PREVIEW && supabaseClient) {
+      if (isDbConnected() && !isLocalId(memId)) {
+        if (!(await ensureAdminSession())) return;
         try {
-          await supabaseClient.from('members').update({ is_active: mem.is_active }).eq('id', memId);
-        } catch (e) {}
+          var r = await supabaseClient.from('members').update({ is_active: newStatus }).eq('id', memId).select();
+          if (r.error) {
+            showToast("Gagal mengubah status di database: " + r.error.message, "error");
+            return;
+          }
+          if (!r.data || r.data.length === 0) {
+            showToast("Status tidak berubah di database. Periksa izin (RLS) Supabase atau masuk ulang sebagai admin.", "error");
+            return;
+          }
+        } catch (e) {
+          showToast("Koneksi database bermasalah: " + e.message, "error");
+          return;
+        }
       }
+
+      mem.is_active = newStatus;
       setStore('members', state.members);
       showToast("Status akun " + mem.full_name + " diubah menjadi " + (mem.is_active ? 'Aktif' : 'Diblokir'));
       renderApp();
@@ -1846,76 +1933,73 @@
     }
 
     window.toggleModuleGrant = async function(memberId, moduleId, isGranted, isSilent) {
-      var grantIndex = state.accessGrants.findIndex(function(g) {
-        return String(g.member_id) === String(memberId) && String(g.module_id) === String(moduleId);
+      var savedGrant = null;
+
+      if (isDbConnected() && !isLocalId(memberId) && !isLocalId(moduleId)) {
+        if (!(await ensureAdminSession())) { renderAccessModuleChecklist(); return false; }
+        try {
+          var r;
+          if (isGranted) {
+            r = await supabaseClient.from('member_module_access')
+              .upsert([{ member_id: memberId, module_id: moduleId, is_granted: true }], { onConflict: 'member_id,module_id' })
+              .select();
+          } else {
+            r = await supabaseClient.from('member_module_access')
+              .delete().eq('member_id', memberId).eq('module_id', moduleId).select();
+          }
+          if (r.error) {
+            showToast("Gagal menyimpan izin akses: " + r.error.message, "error");
+            renderAccessModuleChecklist();
+            return false;
+          }
+          if (isGranted && (!r.data || r.data.length === 0)) {
+            showToast("Izin akses tidak tersimpan di database. Periksa izin (RLS) Supabase atau masuk ulang sebagai admin.", "error");
+            renderAccessModuleChecklist();
+            return false;
+          }
+          if (isGranted) savedGrant = r.data[0];
+        } catch (err) {
+          showToast("Koneksi database bermasalah: " + err.message, "error");
+          renderAccessModuleChecklist();
+          return false;
+        }
+      }
+
+      state.accessGrants = state.accessGrants.filter(function(g) {
+        return !(String(g.member_id) === String(memberId) && String(g.module_id) === String(moduleId));
       });
 
       if (isGranted) {
-        if (grantIndex === -1) {
-          var newGrant = {
-            id: 'acc-' + Date.now(),
-            member_id: memberId,
-            module_id: moduleId,
-            is_granted: true,
-            granted_at: new Date().toISOString()
-          };
-          state.accessGrants.push(newGrant);
-
-          if (!IS_PREVIEW && supabaseClient) {
-            try {
-              await supabaseClient.from('member_module_access').upsert([{
-                member_id: memberId,
-                module_id: moduleId,
-                is_granted: true
-              }], { onConflict: 'member_id,module_id' });
-            } catch (e) {
-              console.warn("Supabase upsert access warning:", e);
-            }
-          }
-        } else {
-          state.accessGrants[grantIndex].is_granted = true;
-          if (!IS_PREVIEW && supabaseClient) {
-            try {
-              await supabaseClient.from('member_module_access').upsert([{
-                member_id: memberId,
-                module_id: moduleId,
-                is_granted: true
-              }], { onConflict: 'member_id,module_id' });
-            } catch (e) {}
-          }
-        }
+        state.accessGrants.push(savedGrant || {
+          id: 'acc-' + Date.now(),
+          member_id: memberId,
+          module_id: moduleId,
+          is_granted: true,
+          granted_at: new Date().toISOString()
+        });
         if (!isSilent) showToast("Akses modul dibuka untuk peserta ini.", "success");
       } else {
-        if (grantIndex !== -1) {
-          state.accessGrants.splice(grantIndex, 1);
-        }
-        state.accessGrants = state.accessGrants.filter(function(g) {
-          return !(String(g.member_id) === String(memberId) && String(g.module_id) === String(moduleId));
-        });
-
-        if (!IS_PREVIEW && supabaseClient) {
-          try {
-            await supabaseClient.from('member_module_access').delete().eq('member_id', memberId).eq('module_id', moduleId);
-          } catch (e) {}
-        }
         if (!isSilent) showToast("Akses modul dikunci.", "info");
       }
 
       setStore('access_grants', state.accessGrants);
+      return true;
     };
 
     window.bulkToggleMemberAccess = async function(shouldGrant) {
       var mem = state.activeMemberForAccess;
       if (!mem) return;
 
+      var allOk = true;
       for (var i = 0; i < state.modules.length; i++) {
         var mod = state.modules[i];
         if (!mod.is_free_preview) {
-          await toggleModuleGrant(mem.id, mod.id, shouldGrant, true);
+          var ok = await toggleModuleGrant(mem.id, mod.id, shouldGrant, true);
+          if (ok === false) { allOk = false; break; }
         }
       }
       renderAccessModuleChecklist();
-      showToast(shouldGrant ? "Semua modul berhasil dibuka!" : "Semua modul telah dikunci!", "success");
+      if (allOk) showToast(shouldGrant ? "Semua modul berhasil dibuka!" : "Semua modul telah dikunci!", "success");
     };
 
     // ==========================================
@@ -2524,6 +2608,7 @@
     // ==========================================
     function bootstrapApplication() {
       renderApp();
+      verifyAdminSession();
       syncSupabaseBackground();
       initInstallPrompt();
     }
