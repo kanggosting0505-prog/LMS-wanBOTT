@@ -1021,8 +1021,15 @@
         return (m.external_url && m.external_url.trim().length > 0) || m.is_free_preview;
       }).length;
 
+      var freeMods = state.modules.filter(function(m) { return m.is_free_preview; }).length;
       var maxPossible = (totalMods * totalMems) || 1;
-      var accessPercent = Math.min(100, Math.round((totalGrants / maxPossible) * 100)) || (totalMods > 0 ? 45 : 0);
+      var grantedPairs = state.accessGrants.filter(function(g) {
+        var gm = state.modules.find(function(m) { return String(m.id) === String(g.module_id); });
+        var gu = state.members.some(function(x) { return String(x.id) === String(g.member_id); });
+        return (g.is_granted === true || g.is_granted === 'true' || g.is_granted === 1) && gm && !gm.is_free_preview && gu;
+      }).length;
+      var openPairs = (totalMems * freeMods) + grantedPairs;
+      var accessPercent = (totalMods > 0 && totalMems > 0) ? Math.min(100, Math.round((openPairs / maxPossible) * 100)) : 0;
       var strokeOffset = Math.round(238.7 * (1 - (accessPercent / 100)));
 
       var categories = ['Kelas Online', 'Link Bebas', 'Source Code', 'E-Book', 'Template'];
@@ -1075,7 +1082,7 @@
             '</div>' +
             '<div>' +
               '<h3 class="text-3xl font-extrabold tracking-tight text-slate-800">' + totalGrants + '</h3>' +
-              '<p class="text-[11px] text-slate-400 mt-1">Modul Berhasil Di-Unlock</p>' +
+              '<p class="text-[11px] text-slate-400 mt-1">Izin Khusus (di luar modul gratis)</p>' +
             '</div>' +
           '</div>' +
 
@@ -1663,10 +1670,14 @@
               '</thead>' +
               '<tbody class="divide-y divide-slate-100 text-slate-700">' +
                 (state.members.length > 0 ? state.members.map(function(mem) {
-                  var activeCount = state.accessGrants.filter(function(g) { 
-                    return String(g.member_id) === String(mem.id) && 
-                           (g.is_granted === true || g.is_granted === 'true' || g.is_granted === 1); 
+                  var freeCount = state.modules.filter(function(m) { return m.is_free_preview; }).length;
+                  var grantedCount = state.accessGrants.filter(function(g) {
+                    var gm = state.modules.find(function(m) { return String(m.id) === String(g.module_id); });
+                    return String(g.member_id) === String(mem.id) &&
+                           (g.is_granted === true || g.is_granted === 'true' || g.is_granted === 1) &&
+                           gm && !gm.is_free_preview;
                   }).length;
+                  var activeCount = freeCount + grantedCount;
 
                   return '<tr class="hover:bg-slate-50/50 transition-colors">' +
                     '<td class="p-4 flex items-center gap-3">' +
@@ -1686,7 +1697,7 @@
                         (mem.is_active ? '● Aktif' : '● Diblokir') +
                       '</button>' +
                     '</td>' +
-                    '<td class="p-4"><span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold">' + activeCount + ' Modul Terbuka</span></td>' +
+                    '<td class="p-4"><span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold">' + activeCount + ' Modul Terbuka</span><p class="text-[10px] text-slate-400 mt-1">' + freeCount + ' gratis · ' + grantedCount + ' izin khusus</p></td>' +
                     '<td class="p-4 text-right">' +
                       '<div class="flex items-center justify-end gap-1.5">' +
                         '<button type="button" onclick="openAccessControlModal(\'' + mem.id + '\')" title="Kontrol Izin Akses Modul" class="px-3 py-1.5 rounded-xl bg-navy-900 hover:bg-navy-950 text-white font-bold text-xs shadow-sm flex items-center gap-1.5">' +
@@ -1930,6 +1941,10 @@
           '</div>' +
         '</div>';
       }).join('');
+
+      if (state.modules.length > 0 && !state.modules.some(function(m) { return !m.is_free_preview; })) {
+        container.insertAdjacentHTML('afterbegin', '<div class="p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-[11px] text-emerald-800 leading-relaxed">Semua modul saat ini bertipe <strong>Gratis</strong>, jadi otomatis terbuka untuk semua member dan tidak perlu izin khusus. Jika ingin dikunci, ubah modul menjadi tidak gratis di menu Kelola Modul.</div>');
+      }
     }
 
     window.toggleModuleGrant = async function(memberId, moduleId, isGranted, isSilent) {
@@ -1989,6 +2004,11 @@
     window.bulkToggleMemberAccess = async function(shouldGrant) {
       var mem = state.activeMemberForAccess;
       if (!mem) return;
+
+      if (!state.modules.some(function(m) { return !m.is_free_preview; })) {
+        showToast("Tidak ada modul terkunci untuk diatur. Semua modul saat ini bertipe Gratis.", "info");
+        return;
+      }
 
       var allOk = true;
       for (var i = 0; i < state.modules.length; i++) {
