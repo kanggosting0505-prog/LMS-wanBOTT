@@ -462,8 +462,8 @@
     // 1. KONFIGURASI SUPABASE & SAKELAR
     // ==========================================
     var IS_PREVIEW = false; // Set false jika sudah terhubung ke database Supabase
-    var SUPABASE_URL = "https://your-project.supabase.co";
-    var SUPABASE_ANON_KEY = "your-anon-key";
+    var SUPABASE_URL = "https://kwosvqgejjqsuhcepchb.supabase.co";
+    var SUPABASE_ANON_KEY = "sb_publishable_HpwWiSf6tyx2yspUUGVqCQ_ObVwKzz1";
 
     var supabaseClient = null;
     if (!IS_PREVIEW && window.supabase && SUPABASE_URL && !SUPABASE_URL.includes("your-project")) {
@@ -477,6 +477,8 @@
     // ==========================================
     // 2. DATA DUMMY AWAL (LOKAL & FALLBACK)
     // ==========================================
+    var SEED_DEMO_DATA = false; // true = isi contoh modul & akun demo saat pertama kali (tidak disarankan)
+
     var DUMMY_MODULES_INIT = [
       {
         id: "mod-link-demo",
@@ -585,9 +587,9 @@
       searchQuery: '',
       activeCategory: 'Semua',
       adminWa: getStore('admin_wa', '6281234567890'),
-      modules: getStore('modules', DUMMY_MODULES_INIT),
-      members: getStore('members', DUMMY_MEMBERS_INIT),
-      accessGrants: getStore('access_grants', DUMMY_ACCESS_INIT)
+      modules: getStore('modules', SEED_DEMO_DATA ? DUMMY_MODULES_INIT : []),
+      members: getStore('members', SEED_DEMO_DATA ? DUMMY_MEMBERS_INIT : []),
+      accessGrants: getStore('access_grants', [])
     };
 
     // ==========================================
@@ -2080,7 +2082,7 @@
                 '<label class="block text-xs font-bold text-slate-700 mb-1">Username / ID Peserta</label>' +
                 '<div class="flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">' +
                   '<i class="fa-solid fa-at text-slate-400 text-xs mr-2.5"></i>' +
-                  '<input type="text" id="gate-member-username" required placeholder="username_anda" value="' + (!state.isGatewayRegister ? 'budi' : '') + '" class="text-xs bg-transparent w-full focus:outline-none" />' +
+                  '<input type="text" id="gate-member-username" required placeholder="username_anda" value="' + (!state.isGatewayRegister && SEED_DEMO_DATA ? 'budi' : '') + '" class="text-xs bg-transparent w-full focus:outline-none" />' +
                 '</div>' +
               '</div>' +
 
@@ -2088,7 +2090,7 @@
                 '<label class="block text-xs font-bold text-slate-700 mb-1">Kata Sandi</label>' +
                 '<div class="flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white">' +
                   '<i class="fa-solid fa-lock text-slate-400 text-xs mr-2.5"></i>' +
-                  '<input type="password" id="gate-member-password" required placeholder="••••••••" value="' + (!state.isGatewayRegister ? '123' : '') + '" class="text-xs bg-transparent w-full focus:outline-none" />' +
+                  '<input type="password" id="gate-member-password" required placeholder="••••••••" value="' + (!state.isGatewayRegister && SEED_DEMO_DATA ? '123' : '') + '" class="text-xs bg-transparent w-full focus:outline-none" />' +
                   '<button type="button" onclick="togglePasswordVisibility(\'gate-member-password\', this)" aria-label="Tampilkan kata sandi" class="ml-2 px-1 text-slate-400 hover:text-slate-700 shrink-0 focus:outline-none"><i class="fa-regular fa-eye text-sm"></i></button>' +
                 '</div>' +
               '</div>' +
@@ -2166,6 +2168,15 @@
       applyAppLogo();
     }
 
+    function storageNoticeHtml() {
+      if (!state.currentUser || state.currentUser.role !== 'admin' || supabaseClient) return '';
+      return '<div class="mb-5 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed flex items-start gap-3">' +
+        '<i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5"></i>' +
+        '<div><p class="font-bold">Mode lokal: database Supabase belum terhubung</p>' +
+        '<p class="mt-0.5">Data modul dan member hanya tersimpan di browser ini. Data hilang jika data situs/cache dibersihkan, dan berbeda antara HP dan laptop. Isi <strong>SUPABASE_URL</strong> dan <strong>SUPABASE_ANON_KEY</strong> di index.html agar data tersimpan permanen.</p></div>' +
+      '</div>';
+    }
+
     function renderAppInner() {
       var sidebar = document.getElementById('app-sidebar');
       var bottomNav = document.getElementById('mobile-bottom-nav');
@@ -2215,6 +2226,11 @@
         default:
           main.innerHTML = renderHomeDashboard();
       }
+
+      if (['home', 'file', 'messages'].indexOf(state.currentPage) !== -1) {
+        var notice = storageNoticeHtml();
+        if (notice) main.insertAdjacentHTML('afterbegin', notice);
+      }
     }
 
     // ==========================================
@@ -2225,22 +2241,23 @@
 
       try {
         var mods = await supabaseClient.from('modules').select('*').order('order_index');
-        if (mods.data && mods.data.length) {
-          state.modules = mods.data;
-          setStore('modules', state.modules);
-        }
-
         var mems = await supabaseClient.from('members').select('*');
-        if (mems.data && mems.data.length) {
-          state.members = mems.data;
-          setStore('members', state.members);
-        }
-
         var access = await supabaseClient.from('member_module_access').select('*');
-        if (access.data && !access.error) {
-          if (access.data.length > 0) {
-            state.accessGrants = access.data;
-            setStore('access_grants', state.accessGrants);
+        var errors = [];
+
+        if (mods.error) { errors.push('modules: ' + mods.error.message); }
+        else { state.modules = mods.data || []; setStore('modules', state.modules); }
+
+        if (mems.error) { errors.push('members: ' + mems.error.message); }
+        else { state.members = mems.data || []; setStore('members', state.members); }
+
+        if (access.error) { errors.push('member_module_access: ' + access.error.message); }
+        else { state.accessGrants = access.data || []; setStore('access_grants', state.accessGrants); }
+
+        if (errors.length) {
+          console.warn("Sinkronisasi Supabase sebagian gagal:", errors);
+          if (state.currentUser && state.currentUser.role === 'admin') {
+            showToast("Gagal memuat dari database (" + errors[0] + ")", "error");
           }
         }
 
