@@ -81,6 +81,20 @@ create policy "access_admin_write" on public.member_module_access for all to aut
 -- untuk keamanan lebih kuat, sandi sebaiknya di-hash / memakai Supabase Auth.
 
 -- ------------------------------------------------------------
+-- Pengaturan aplikasi (nomor WhatsApp admin, dll)
+-- ------------------------------------------------------------
+create table if not exists public.app_settings (
+  key text primary key,
+  value text,
+  updated_at timestamptz not null default now()
+);
+alter table public.app_settings enable row level security;
+drop policy if exists "settings_read" on public.app_settings;
+drop policy if exists "settings_admin_write" on public.app_settings;
+create policy "settings_read"        on public.app_settings for select using (true);
+create policy "settings_admin_write" on public.app_settings for all to authenticated using (true) with check (true);
+
+-- ------------------------------------------------------------
 -- Diagnosa (opsional): lihat semua policy yang aktif
 --   select tablename, policyname, cmd, roles from pg_policies where schemaname = 'public';
 -- ------------------------------------------------------------

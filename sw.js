@@ -1,4 +1,4 @@
-const CACHE = 'wanbott-v10';
+const CACHE = 'wanbott-v11';
 const CORE = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {

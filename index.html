@@ -462,8 +462,8 @@
     // 1. KONFIGURASI SUPABASE & SAKELAR
     // ==========================================
     var IS_PREVIEW = false; // Set false jika sudah terhubung ke database Supabase
-    var SUPABASE_URL = "https://kwosvqgejjqsuhcepchb.supabase.co";
-    var SUPABASE_ANON_KEY = "sb_publishable_HpwWiSf6tyx2yspUUGVqCQ_ObVwKzz1";
+    var SUPABASE_URL = "https://your-project.supabase.co";
+    var SUPABASE_ANON_KEY = "your-anon-key";
 
     var supabaseClient = null;
     if (!IS_PREVIEW && window.supabase && SUPABASE_URL && !SUPABASE_URL.includes("your-project")) {
@@ -2101,15 +2101,44 @@
       '</div>';
     }
 
-    window.saveAppSettings = function() {
+    window.saveAppSettings = async function() {
       if (!state.currentUser || state.currentUser.role !== 'admin') {
         showToast("Hanya Administrator yang berhak mengubah setelan kontak!", "error");
         return;
       }
-      var val = document.getElementById('setting-admin-wa').value.trim();
-      if (!val) return;
+      var raw = document.getElementById('setting-admin-wa').value.trim();
+      // Rapikan: hanya angka, awalan 0 diganti 62 (format internasional untuk wa.me)
+      var val = raw.replace(/[^0-9]/g, '');
+      if (val.indexOf('0') === 0) val = '62' + val.slice(1);
+      if (val.length < 9) {
+        showToast("Nomor WhatsApp tidak valid. Contoh: 6281234567890", "error");
+        return;
+      }
+
+      if (isDbConnected()) {
+        if (!(await ensureAdminSession())) return;
+        try {
+          var r = await supabaseClient.from('app_settings')
+            .upsert([{ key: 'admin_wa', value: val, updated_at: new Date().toISOString() }], { onConflict: 'key' })
+            .select();
+          if (r.error) {
+            showToast("Gagal menyimpan ke database: " + r.error.message + " (pastikan tabel app_settings sudah dibuat, lihat supabase-setup.sql)", "error");
+            return;
+          }
+          if (!r.data || r.data.length === 0) {
+            showToast("Nomor tidak tersimpan di database. Periksa izin (RLS) Supabase atau masuk ulang sebagai admin.", "error");
+            return;
+          }
+        } catch (e) {
+          showToast("Koneksi database bermasalah: " + e.message, "error");
+          return;
+        }
+      }
+
       state.adminWa = val;
       setStore('admin_wa', val);
+      var inputEl = document.getElementById('setting-admin-wa');
+      if (inputEl) inputEl.value = val;
       showToast("Nomor WhatsApp Admin berhasil diperbarui!");
     };
 
@@ -2347,6 +2376,7 @@
         var mods = await supabaseClient.from('modules').select('*').order('order_index');
         var mems = await supabaseClient.from('members').select('*');
         var access = await supabaseClient.from('member_module_access').select('*');
+        var sett = await supabaseClient.from('app_settings').select('*');
         var errors = [];
 
         if (mods.error) { errors.push('modules: ' + mods.error.message); }
@@ -2357,6 +2387,13 @@
 
         if (access.error) { errors.push('member_module_access: ' + access.error.message); }
         else { state.accessGrants = access.data || []; setStore('access_grants', state.accessGrants); }
+
+        if (sett.error) {
+          errors.push('app_settings: ' + sett.error.message);
+        } else {
+          var waRow = (sett.data || []).find(function(r) { return r.key === 'admin_wa'; });
+          if (waRow && waRow.value) { state.adminWa = waRow.value; setStore('admin_wa', waRow.value); }
+        }
 
         if (errors.length) {
           console.warn("Sinkronisasi Supabase sebagian gagal:", errors);
