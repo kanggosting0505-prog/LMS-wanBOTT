@@ -468,7 +468,15 @@
     var supabaseClient = null;
     if (!IS_PREVIEW && window.supabase && SUPABASE_URL && !SUPABASE_URL.includes("your-project")) {
       try {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          global: {
+            fetch: function(url, options) {
+              options = options || {};
+              options.cache = 'no-store'; // data selalu diambil segar dari server
+              return fetch(url, options);
+            }
+          }
+        });
       } catch (e) {
         console.error("Gagal menginisialisasi Supabase:", e);
       }
@@ -768,6 +776,7 @@
       state.currentPage = 'home';
       renderApp();
       showToast("Selamat datang di wanBOTT Dashboard!", "success");
+      syncSupabaseBackground({ force: true, forceRender: true });
     };
 
     // Submit Login / Register Peserta (Member)
@@ -808,7 +817,17 @@
         };
 
         if (!IS_PREVIEW && supabaseClient) {
+          var regForm = e && e.target && e.target.querySelector ? e.target : null;
+          var regBtn = regForm ? regForm.querySelector('button[type="submit"]') : null;
+          if (regBtn) regBtn.disabled = true;
           try {
+            // Cek username langsung ke database (bukan hanya cache di HP ini)
+            var dupRes = await supabaseClient.from('members').select('id').eq('username', username).limit(1);
+            if (!dupRes.error && dupRes.data && dupRes.data.length > 0) {
+              showToast("Username ini sudah digunakan!", "error");
+              return;
+            }
+
             var dbRes = await supabaseClient.from('members').insert([{
               full_name: fullName,
               username: username,
@@ -816,9 +835,26 @@
               whatsapp: whatsapp,
               is_active: true
             }]).select();
-            if (dbRes.data && dbRes.data[0]) newMember.id = dbRes.data[0].id;
+
+            if (dbRes.error) {
+              if (dbRes.error.code === '23505') {
+                showToast("Username ini sudah digunakan!", "error");
+              } else {
+                showToast("Pendaftaran gagal disimpan: " + dbRes.error.message, "error");
+              }
+              return;
+            }
+            if (dbRes.data && dbRes.data[0]) {
+              newMember = Object.assign(newMember, dbRes.data[0]);
+            }
+            // Jika insert berhasil tetapi baris tidak dikembalikan (kebijakan RLS),
+            // ID lokal akan diganti ID database oleh sinkronisasi berikutnya.
           } catch (err) {
-            console.warn("Simpan ke Supabase gagal, fallback lokal:", err);
+            console.warn("Simpan ke Supabase gagal:", err);
+            showToast("Koneksi bermasalah, pendaftaran belum tersimpan. Periksa internet lalu coba lagi.", "error");
+            return;
+          } finally {
+            if (regBtn) regBtn.disabled = false;
           }
         }
 
@@ -830,6 +866,7 @@
         state.allowGuestBrowse = true;
         state.currentPage = 'home';
         showToast("Pendaftaran berhasil! Selamat datang, " + fullName);
+        syncSupabaseBackground({ force: true, forceRender: true });
         renderApp();
       } else {
         var memberFound = null;
@@ -861,6 +898,7 @@
           state.allowGuestBrowse = true;
           state.currentPage = 'home';
           showToast("Berhasil masuk. Selamat datang kembali!");
+          syncSupabaseBackground({ force: true, forceRender: true });
           renderApp();
         } else {
           showToast("Username atau kata sandi tidak cocok!", "error");
@@ -1650,6 +1688,8 @@
             '<span class="text-xs font-bold text-slate-700 bg-white px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-sm">' +
               'Total Peserta: ' + state.members.length +
             '</span>' +
+            '<span data-sync-label class="hidden sm:inline text-[10px] font-semibold text-slate-400">' + syncLabelText() + '</span>' +
+            '<button type="button" onclick="manualSync()" title="Muat ulang data dari database" class="px-3 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-rotate text-xs"></i> Muat Ulang</button>' +
             '<button type="button" onclick="openAddMemberModal()" class="px-4 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-950 text-white font-bold text-xs shadow-md flex items-center gap-1.5">' +
               '<i class="fa-solid fa-user-plus text-xs"></i> Tambah Member' +
             '</button>' +
@@ -2369,43 +2409,274 @@
     // ==========================================
     // 17. SINKRONISASI SUPABASE DI LATAR BELAKANG
     // ==========================================
-    async function syncSupabaseBackground() {
-      if (IS_PREVIEW || !supabaseClient) return;
+    var syncState = {
+      running: false, queued: false, started: false, failed: false,
+      lastOkAt: null, lastTryAt: 0, lastErrToastAt: 0, tick: 0,
+      renderTimer: null, kickTimer: null, healTried: false,
+      channel: null, memChannel: null
+    };
 
-      try {
-        var mods = await supabaseClient.from('modules').select('*').order('order_index');
-        var mems = await supabaseClient.from('members').select('*');
-        var access = await supabaseClient.from('member_module_access').select('*');
-        var sett = await supabaseClient.from('app_settings').select('*');
-        var errors = [];
+    function snapshotKey(o) {
+      try { return JSON.stringify(o); } catch (e) { return String(Math.random()); }
+    }
 
-        if (mods.error) { errors.push('modules: ' + mods.error.message); }
-        else { state.modules = mods.data || []; setStore('modules', state.modules); }
+    function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
-        if (mems.error) { errors.push('members: ' + mems.error.message); }
-        else { state.members = mems.data || []; setStore('members', state.members); }
+    function syncLabelText() {
+      if (IS_PREVIEW || !supabaseClient) return 'Mode lokal';
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) return 'Offline - data belum diperbarui';
+      if (syncState.failed) return 'Gagal sinkron - mencoba lagi otomatis';
+      if (syncState.lastOkAt) {
+        var d = syncState.lastOkAt;
+        return 'Sinkron ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+      }
+      return 'Menyinkronkan...';
+    }
 
-        if (access.error) { errors.push('member_module_access: ' + access.error.message); }
-        else { state.accessGrants = access.data || []; setStore('access_grants', state.accessGrants); }
+    function updateSyncLabels() {
+      var els = document.querySelectorAll('[data-sync-label]');
+      var txt = syncLabelText();
+      Array.prototype.forEach.call(els, function(el) { el.textContent = txt; });
+    }
 
-        if (sett.error) {
-          errors.push('app_settings: ' + sett.error.message);
-        } else {
-          var waRow = (sett.data || []).find(function(r) { return r.key === 'admin_wa'; });
-          if (waRow && waRow.value) { state.adminWa = waRow.value; setStore('admin_wa', waRow.value); }
+    // Layar sedang dipakai mengetik / membuka dialog: jangan digambar ulang
+    function isUiBusy() {
+      var ids = ['modal-manage-access', 'modal-module-form', 'modal-member-form', 'modal-confirm'];
+      for (var i = 0; i < ids.length; i++) {
+        var m = document.getElementById(ids[i]);
+        if (m && !m.classList.contains('hidden')) return true;
+      }
+      var a = document.activeElement;
+      if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.id !== 'global-search-input') return true;
+      return false;
+    }
+
+    // Gambar ulang hanya jika aman. Data di state tetap sudah terbarui.
+    function safeRender() {
+      if (!state.currentUser && !state.allowGuestBrowse) return; // halaman login/daftar: ada form
+      if (state.currentPage === 'view-module' && state.selectedModuleId && checkHasAccess(state.selectedModuleId)) return; // jangan ganggu video/materi
+      if (isUiBusy()) {
+        if (!syncState.renderTimer) {
+          syncState.renderTimer = setTimeout(function() { syncState.renderTimer = null; safeRender(); }, 1500);
         }
+        return;
+      }
+      renderApp();
+    }
+
+    function forceMemberLogout(msg) {
+      state.currentUser = null;
+      setStore('auth_user', null);
+      state.allowGuestBrowse = false;
+      state.authGatewayTab = 'member';
+      state.currentPage = 'home';
+      renderApp();
+      showToast(msg, 'error');
+    }
+
+    // Samakan data akun member yang sedang login dengan database
+    async function reconcileOwnMember(row) {
+      if (!state.currentUser || state.currentUser.role !== 'member') return false;
+      var me = state.currentUser.data;
+
+      if (row) {
+        if (isLocalId(me.id) && row.password !== me.password) {
+          forceMemberLogout("Akun di perangkat ini tidak cocok dengan data server. Silakan masuk atau daftar ulang.");
+          return true;
+        }
+        if (row.is_active === false) {
+          forceMemberLogout("Akun Anda telah dinonaktifkan oleh Administrator.");
+          return true;
+        }
+        if (snapshotKey(row) !== snapshotKey(me)) {
+          state.currentUser.data = row;
+          setStore('auth_user', state.currentUser);
+          return true;
+        }
+        return false;
+      }
+
+      // Akun hasil pendaftaran lama yang belum pernah masuk database: kirim sekarang (sekali per sesi)
+      if (isLocalId(me.id) && !syncState.healTried) {
+        syncState.healTried = true;
+        try {
+          var ins = await supabaseClient.from('members').insert([{
+            full_name: me.full_name, username: me.username, password: me.password,
+            whatsapp: me.whatsapp, is_active: me.is_active !== false
+          }]).select();
+          if (!ins.error && ins.data && ins.data[0] && state.currentUser && state.currentUser.role === 'member') {
+            state.currentUser.data = ins.data[0];
+            setStore('auth_user', state.currentUser);
+            return true;
+          }
+        } catch (e) {}
+      }
+      return false;
+    }
+
+    async function syncSupabaseBackground(opts) {
+      opts = opts || {};
+      if (IS_PREVIEW || !supabaseClient) return;
+      if (syncState.running) { syncState.queued = true; return; }
+      var startedAt = Date.now();
+      if (!opts.force && startedAt - syncState.lastTryAt < 4000) return;
+      syncState.running = true;
+      syncState.lastTryAt = startedAt;
+
+      var changed = false;
+      var errors = [];
+      try {
+        var isAdmin = !!(state.currentUser && state.currentUser.role === 'admin');
+        var me = (state.currentUser && state.currentUser.role === 'member') ? state.currentUser.data : null;
+        var hasUser = isAdmin || !!me;
+
+        var accQuery = supabaseClient.from('member_module_access').select('*');
+        if (me && !isLocalId(me.id)) accQuery = accQuery.eq('member_id', me.id);
+
+        var ownQuery = null;
+        if (me) {
+          ownQuery = supabaseClient.from('members').select('*');
+          ownQuery = isLocalId(me.id) ? ownQuery.eq('username', me.username) : ownQuery.eq('id', me.id);
+          ownQuery = ownQuery.limit(1);
+        }
+
+        var out = await Promise.all([
+          supabaseClient.from('modules').select('*').order('order_index'),
+          isAdmin ? supabaseClient.from('members').select('*') : Promise.resolve(null),
+          hasUser ? accQuery : Promise.resolve(null),
+          supabaseClient.from('app_settings').select('*'),
+          ownQuery ? ownQuery : Promise.resolve(null)
+        ]);
+
+        var put = function(res, label, stateKey, storeKey) {
+          if (!res) return;
+          if (res.error) { errors.push(label + ': ' + res.error.message); return; }
+          var next = res.data || [];
+          if (snapshotKey(next) !== snapshotKey(state[stateKey])) {
+            state[stateKey] = next;
+            setStore(storeKey, next);
+            changed = true;
+          }
+        };
+        put(out[0], 'modules', 'modules', 'modules');
+        put(out[1], 'members', 'members', 'members');
+        put(out[2], 'member_module_access', 'accessGrants', 'access_grants');
+
+        if (out[3]) {
+          if (out[3].error) {
+            errors.push('app_settings: ' + out[3].error.message);
+          } else {
+            var waRow = (out[3].data || []).find(function(r) { return r.key === 'admin_wa'; });
+            if (waRow && waRow.value && waRow.value !== state.adminWa) {
+              state.adminWa = waRow.value;
+              setStore('admin_wa', waRow.value);
+              changed = true;
+            }
+          }
+        }
+
+        if (me && out[4]) {
+          if (out[4].error) errors.push('akun: ' + out[4].error.message);
+          else if (await reconcileOwnMember((out[4].data && out[4].data[0]) || null)) changed = true;
+        }
+
+        syncState.failed = errors.length > 0;
+        if (!errors.length) syncState.lastOkAt = new Date();
 
         if (errors.length) {
           console.warn("Sinkronisasi Supabase sebagian gagal:", errors);
-          if (state.currentUser && state.currentUser.role === 'admin') {
+          if (isAdmin && Date.now() - syncState.lastErrToastAt > 60000) {
+            syncState.lastErrToastAt = Date.now();
             showToast("Gagal memuat dari database (" + errors[0] + ")", "error");
           }
         }
 
-        renderApp();
+        updateSyncLabels();
+        if (changed || opts.forceRender) safeRender();
       } catch (err) {
+        syncState.failed = true;
         console.warn("Sinkronisasi Supabase ditunda:", err);
+        updateSyncLabels();
+      } finally {
+        syncState.running = false;
+        syncRealtimeForRole();
+        if (syncState.queued) {
+          syncState.queued = false;
+          setTimeout(function() { syncSupabaseBackground({ force: true }); }, 300);
+        }
       }
+    }
+
+    // Tombol "Muat Ulang" di dashboard admin
+    window.manualSync = async function() {
+      if (IS_PREVIEW || !supabaseClient) {
+        showToast("Mode lokal: database belum terhubung.", "info");
+        return;
+      }
+      var el = document.querySelector('[data-sync-label]');
+      if (el) el.textContent = 'Menyinkronkan...';
+      await syncSupabaseBackground({ force: true, forceRender: true });
+      if (syncState.failed) showToast("Belum berhasil memuat data. Periksa koneksi internet.", "error");
+      else showToast("Data diperbarui dari database.", "success");
+    };
+
+    // Sinkron cepat saat ada perubahan di server (Supabase Realtime)
+    function kickSync() {
+      clearTimeout(syncState.kickTimer);
+      syncState.kickTimer = setTimeout(function() { syncSupabaseBackground({ force: true }); }, 400);
+    }
+
+    // Tabel members (berisi sandi) hanya didengarkan saat admin yang login
+    function syncRealtimeForRole() {
+      if (!syncState.started || !supabaseClient) return;
+      var isAdmin = !!(state.currentUser && state.currentUser.role === 'admin');
+      try {
+        if (isAdmin && !syncState.memChannel) {
+          syncState.memChannel = supabaseClient.channel('wanbott-live-members')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, kickSync)
+            .subscribe();
+        } else if (!isAdmin && syncState.memChannel) {
+          supabaseClient.removeChannel(syncState.memChannel);
+          syncState.memChannel = null;
+        }
+      } catch (e) { console.warn('Realtime members tidak aktif:', e); }
+    }
+
+    function startSyncEngine() {
+      if (IS_PREVIEW || !supabaseClient || syncState.started) return;
+      syncState.started = true;
+
+      // 1) Saat aplikasi dibuka lagi / kembali aktif / internet kembali
+      var resume = function() {
+        if (document.visibilityState === 'hidden') return;
+        verifyAdminSession();
+        syncSupabaseBackground({ force: true });
+      };
+      document.addEventListener('visibilitychange', resume);
+      window.addEventListener('focus', resume);
+      window.addEventListener('pageshow', function(ev) { if (ev.persisted) resume(); });
+      window.addEventListener('online', function() { updateSyncLabels(); syncSupabaseBackground({ force: true }); });
+      window.addEventListener('offline', updateSyncLabels);
+
+      // 2) Polling berkala (cadangan jika Realtime belum aktif): admin 15 detik, lainnya 30 detik
+      setInterval(function() {
+        if (document.visibilityState === 'hidden' || navigator.onLine === false) return;
+        syncState.tick++;
+        var isAdmin = !!(state.currentUser && state.currentUser.role === 'admin');
+        if (!isAdmin && syncState.tick % 2 === 1) return;
+        syncSupabaseBackground({});
+      }, 15000);
+
+      // 3) Realtime: modul, hak akses, pengaturan (members ditambah saat admin)
+      try {
+        var ch = supabaseClient.channel('wanbott-live');
+        ['modules', 'member_module_access', 'app_settings'].forEach(function(t) {
+          ch = ch.on('postgres_changes', { event: '*', schema: 'public', table: t }, kickSync);
+        });
+        ch.subscribe();
+        syncState.channel = ch;
+      } catch (err) { console.warn('Realtime tidak aktif:', err); }
+      syncRealtimeForRole();
     }
 
     // ==========================================
@@ -2666,7 +2937,8 @@
     function bootstrapApplication() {
       renderApp();
       verifyAdminSession();
-      syncSupabaseBackground();
+      syncSupabaseBackground({ force: true, forceRender: true });
+      startSyncEngine();
       initInstallPrompt();
     }
 
