@@ -87,7 +87,6 @@
     /* Area aman untuk notch / status bar & home indicator */
     #app-header { padding-top: calc(1.25rem + env(safe-area-inset-top)); }
     #app-sidebar { padding-top: env(safe-area-inset-top); }
-    #mobile-bottom-nav { padding-bottom: calc(0.625rem + env(safe-area-inset-bottom)); }
     #main-content-area { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 
     /* Cegah iOS zoom otomatis saat mengetik di form */
@@ -154,6 +153,119 @@
     .switch-input:checked ~ .switch-bg {
       background-color: #f59e0b;
     }
+
+    /* =====================================================
+       DESAIN BARU: tampilan aplikasi mobile (biru + navy)
+       ===================================================== */
+    html, body { background: #eaf2ff; }
+    #app-container { background: linear-gradient(180deg, #d9e7ff 0%, #edf3ff 40%, #f6f9ff 100%); }
+    @media (max-width: 767px) { body.page-home #app-header { display: none !important; } }
+
+    .home-wrap { max-width: 980px; margin: 0 auto; }
+    .home-hero {
+      position: relative; z-index: 1;
+      padding: calc(env(safe-area-inset-top, 0px) + 18px) 16px 0;
+      background: radial-gradient(120% 90% at 85% 0%, rgba(147,197,253,.55) 0%, rgba(147,197,253,0) 60%),
+                  linear-gradient(165deg, #1d4ed8 0%, #2f6fe8 55%, #5aa2f7 100%);
+      border-radius: 0 0 34px 34px;
+    }
+    @media (min-width: 768px) { .home-hero { border-radius: 28px; padding-top: 20px; } }
+    .home-top { display: flex; align-items: center; gap: 12px; color: #fff; }
+    .home-avatar { width: 46px; height: 46px; border-radius: 50%; background: #0b1b33; border: 2px solid rgba(255,255,255,.4); overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .home-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .home-hello { flex: 1; min-width: 0; }
+    .home-hello h2 { font-size: 17px; font-weight: 800; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .home-hello p { font-size: 11.5px; font-weight: 500; opacity: .9; margin-top: 2px; }
+    .home-pill { display: flex; border-radius: 999px; background: #fff; padding: 3px; box-shadow: inset 0 0 0 2px rgba(37,99,235,.35); font-size: 10.5px; font-weight: 800; }
+    .home-pill span { padding: 4px 11px; border-radius: 999px; color: #334155; }
+    .home-pill span.on { background: linear-gradient(180deg, #3b82f6, #1d4ed8); color: #fff; }
+    .home-help { width: 42px; height: 42px; border-radius: 12px; border: 0; cursor: pointer; background: linear-gradient(160deg, #1e3a8a, #172554); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 6px 14px rgba(15,23,42,.3); }
+
+    .home-progress {
+      position: relative; margin: 18px 0 -34px; padding: 16px 16px 30px; border-radius: 24px;
+      display: flex; align-items: center; gap: 16px; color: #fff;
+      background: linear-gradient(135deg, #0a1f44 0%, #13306b 55%, #1b4aa0 100%);
+      border: 1px solid rgba(255,255,255,.14); box-shadow: 0 18px 30px -12px rgba(8,25,60,.55);
+    }
+    .ring { width: 84px; height: 84px; position: relative; flex-shrink: 0; }
+    .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; }
+    .home-progress h4 { font-size: 14px; font-weight: 600; opacity: .95; }
+    .home-progress .big { font-size: 17px; font-weight: 800; margin-top: 2px; line-height: 1.25; }
+    .home-progress .big em { font-style: normal; color: #22c55e; }
+    .home-progress .big small { font-size: inherit; color: #94a3b8; font-weight: 800; }
+    .pbar { height: 6px; border-radius: 99px; background: rgba(148,163,184,.55); margin-top: 10px; width: 70%; overflow: hidden; }
+    .pbar i { display: block; height: 100%; border-radius: 99px; background: #22c55e; }
+    .home-continue { position: absolute; right: 14px; bottom: -20px; display: flex; align-items: stretch; border: 0; padding: 0; cursor: pointer; border-radius: 14px; overflow: hidden; font-family: inherit; font-size: 13px; font-weight: 700; color: #fff; box-shadow: 0 0 0 4px rgba(255,255,255,.7), 0 10px 20px rgba(37,99,235,.35); }
+    .home-continue span { padding: 11px 16px; background: linear-gradient(90deg, #2563eb, #3b82f6); }
+    .home-continue i { width: 40px; background: #0b1b33; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+    .home-section { padding: 0 16px; margin-top: 22px; }
+    .home-section.first { margin-top: 68px; }
+    @media (min-width: 768px) { .home-section { padding: 0; } }
+    .home-title { font-size: 15px; font-weight: 800; color: #0f1f3d; margin-bottom: 10px; }
+    .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .menu-tile {
+      position: relative; border: 0; cursor: pointer; padding: 12px 4px 9px; border-radius: 18px;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 7px; min-height: 94px;
+      background: linear-gradient(165deg, rgba(255,255,255,.95), rgba(186,214,254,.75));
+      box-shadow: 0 8px 16px -8px rgba(37,99,235,.45), inset 0 1px 0 #fff;
+      color: #0f2347; font-family: inherit; font-size: 10.5px; font-weight: 700; line-height: 1.15; text-align: center; transition: transform .15s;
+    }
+    .menu-tile:active { transform: scale(.95); }
+    .menu-tile.is-primary { background: linear-gradient(165deg, #173a73, #0b1f44); color: #fff; box-shadow: 0 12px 20px -8px rgba(8,25,60,.7), inset 0 1px 0 rgba(255,255,255,.2); }
+    .ico3d {
+      width: 42px; height: 42px; border-radius: 13px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 19px; position: relative; flex-shrink: 0;
+      background: linear-gradient(150deg, var(--c1, #60a5fa), var(--c2, #1d4ed8));
+      box-shadow: 0 8px 12px -4px var(--c2, #1d4ed8), inset 0 -3px 0 rgba(0,0,0,.18), inset 0 2px 0 rgba(255,255,255,.55);
+    }
+    .ico3d::after { content: ""; position: absolute; left: 5px; right: 5px; top: 3px; height: 42%; border-radius: 10px 10px 14px 14px; background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,0)); pointer-events: none; }
+    .ico3d i { filter: drop-shadow(0 2px 2px rgba(0,0,0,.28)); position: relative; z-index: 1; }
+    .menu-badge { position: absolute; top: -5px; right: -3px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 99px; background: #ef4444; color: #fff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #fff; }
+    @media (min-width: 768px) { .menu-tile { min-height: 116px; font-size: 12px; } .ico3d { width: 52px; height: 52px; font-size: 23px; border-radius: 16px; } }
+
+    .cat-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .cat-head button { font-size: 12.5px; font-weight: 600; color: #1d4ed8; text-decoration: underline; cursor: pointer; background: none; border: 0; font-family: inherit; }
+    .cat-row { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 2px 16px 14px; margin: 0 -16px; scrollbar-width: none; }
+    .cat-row::-webkit-scrollbar { display: none; }
+    @media (min-width: 768px) { .cat-row { padding: 2px 0 14px; margin: 0; } }
+    .cat-card { scroll-snap-align: start; flex: 0 0 66%; max-width: 240px; min-width: 170px; border: 0; text-align: left; cursor: pointer; color: #fff; border-radius: 18px; padding: 14px 14px 12px; position: relative; font-family: inherit; overflow: hidden; background: linear-gradient(135deg, #0d2a5c, #173f86); box-shadow: 0 12px 20px -10px rgba(15,40,100,.6); }
+    .cat-card.alt { background: linear-gradient(135deg, #1d4ed8, #3b82f6 70%, #1e40af); }
+    .cat-card h5 { font-size: 16px; font-weight: 800; line-height: 1.15; padding-right: 22px; }
+    .cat-card p { font-size: 11px; opacity: .92; margin-top: 6px; font-weight: 600; }
+    .cat-card .row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .cat-card .pb { flex: 1; height: 4px; background: rgba(0,0,0,.35); border-radius: 99px; overflow: hidden; }
+    .cat-card .pb i { display: block; height: 100%; background: #22c55e; }
+    .cat-card .pc { font-size: 11px; font-weight: 700; }
+    .cat-card .lock { position: absolute; right: 12px; top: 12px; color: #fbbf24; font-size: 13px; }
+
+    .mod-row { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 16px; width: 100%; text-align: left; cursor: pointer; font-family: inherit; background: rgba(255,255,255,.88); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 6px 14px -8px rgba(37,99,235,.35); }
+    .mod-row + .mod-row { margin-top: 8px; }
+    .mod-thumb { width: 54px; height: 54px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: linear-gradient(135deg, #1e3a8a, #3b82f6); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; }
+    .mod-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .mod-info { flex: 1; min-width: 0; }
+    .mod-info b { display: block; font-size: 13px; color: #0f1f3d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mod-info small { font-size: 11px; color: #64748b; }
+    .tag { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 99px; flex-shrink: 0; }
+    .tag.free { background: #dcfce7; color: #15803d; } .tag.lock { background: #fee2e2; color: #b91c1c; } .tag.open { background: #dbeafe; color: #1d4ed8; }
+    .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 768px) { .stat-grid { grid-template-columns: repeat(4, 1fr); } }
+    .stat { border-radius: 16px; padding: 12px 14px; background: rgba(255,255,255,.88); box-shadow: 0 6px 14px -8px rgba(37,99,235,.35); }
+    .stat b { display: block; font-size: 22px; font-weight: 800; color: #0f1f3d; }
+    .stat small { font-size: 11px; color: #64748b; font-weight: 600; }
+    .account-card { border-radius: 24px; padding: 22px 16px; text-align: center; color: #fff; background: radial-gradient(120% 90% at 85% 0%, rgba(147,197,253,.5) 0%, rgba(147,197,253,0) 60%), linear-gradient(165deg, #1d4ed8, #3b82f6); box-shadow: 0 16px 28px -14px rgba(29,78,216,.7); }
+    .account-card .home-avatar { width: 72px; height: 72px; margin: 0 auto 10px; }
+
+    /* Navigasi bawah (mobile) dengan tombol tengah menonjol */
+    #mobile-bottom-nav { padding: 0 10px calc(10px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+    .bnav { pointer-events: auto; position: relative; max-width: 520px; margin: 0 auto; height: 64px; border-radius: 30px; background: rgba(255,255,255,.96); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 14px 30px -10px rgba(15,40,100,.45), 0 0 0 1px rgba(255,255,255,.8); display: grid; grid-template-columns: 1fr 1fr 84px 1fr 1fr; align-items: center; }
+    .bnav button { border: 0; background: none; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; font-size: 23px; cursor: pointer; position: relative; }
+    .bnav button.active { color: #1e3a8a; }
+    .bnav button.active::after { content: ""; width: 5px; height: 5px; border-radius: 50%; background: #0b1b33; position: absolute; bottom: 7px; }
+    .bnav-center { position: relative; height: 100%; }
+    .bnav button.center-btn { position: absolute; left: 50%; top: -26px; transform: translateX(-50%); width: 62px; height: 62px; border-radius: 50%; color: #fff; font-size: 24px; background: linear-gradient(160deg, #60a5fa, #1d4ed8); box-shadow: 0 0 0 5px #eaf2ff, 0 12px 22px -6px rgba(29,78,216,.7), inset 0 2px 0 rgba(255,255,255,.5); }
+    .bnav button.center-btn.active { background: linear-gradient(160deg, #2563eb, #172554); color: #fff; }
+    .bnav button.center-btn.active::after { display: none; }
   </style>
 </head>
 <body>
@@ -243,7 +355,7 @@
       </main>
 
       <!-- MOBILE BOTTOM NAVIGATION -->
-      <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 py-2.5 px-3 z-30 flex items-center justify-around shadow-lg">
+      <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 z-30">
         <!-- Rendered dynamically -->
       </nav>
 
@@ -334,8 +446,22 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">URL Gambar Cover</label>
-            <input type="text" inputmode="url" autocapitalize="off" autocomplete="off" spellcheck="false" id="mod-cover-url" placeholder="https://images.unsplash.com/..." class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-navy-900 bg-white" />
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Foto Cover Modul</label>
+            <input type="hidden" id="mod-cover-url" />
+            <input type="file" id="mod-cover-file" accept="image/*" class="hidden" onchange="handleCoverFileChange(this)" />
+            <div class="flex items-center gap-3">
+              <div class="w-28 h-20 rounded-xl overflow-hidden bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center text-slate-400 shrink-0">
+                <img id="cover-preview-img" alt="Pratinjau foto cover" class="hidden w-full h-full object-cover" />
+                <div id="cover-preview-empty" class="text-center"><i class="fa-regular fa-image text-xl"></i><p class="text-[9px] mt-0.5 font-semibold">Belum ada foto</p></div>
+              </div>
+              <div class="flex-1 min-w-0 space-y-1.5">
+                <div class="flex flex-wrap gap-2">
+                  <button type="button" onclick="document.getElementById('mod-cover-file').click()" class="px-3.5 py-2 rounded-xl bg-navy-900 hover:bg-navy-950 text-white text-xs font-bold flex items-center gap-1.5"><i class="fa-solid fa-camera"></i><span id="btn-pick-cover-text">Pilih Foto</span></button>
+                  <button type="button" id="btn-remove-cover" onclick="removeCoverPhoto()" class="hidden px-3 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold items-center gap-1.5"><i class="fa-regular fa-trash-can"></i> Hapus</button>
+                </div>
+                <p id="cover-file-info" class="text-[11px] text-slate-400 leading-snug">Pilih foto dari galeri atau kamera (JPG/PNG/WebP). Foto otomatis diperkecil sebelum diunggah.</p>
+              </div>
+            </div>
           </div>
 
           <!-- INPUT KHUSUS: TAUTAN LANGSUNG / LINK BEBAS -->
@@ -372,7 +498,7 @@
 
           <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
             <button type="button" onclick="closeModal('modal-module-form')" class="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Batal</button>
-            <button type="submit" class="px-5 py-2.5 text-xs font-bold bg-navy-900 hover:bg-navy-950 text-white rounded-xl shadow-md">Simpan Modul</button>
+            <button type="submit" id="btn-save-module" class="px-5 py-2.5 text-xs font-bold bg-navy-900 hover:bg-navy-950 text-white rounded-xl shadow-md disabled:opacity-60">Simpan Modul</button>
           </div>
         </form>
       </div>
@@ -917,9 +1043,17 @@
 
     window.handleSearchModule = function(val) {
       state.searchQuery = (val || '').toLowerCase();
-      if (state.currentPage === 'catalog' || state.currentPage === 'file') {
-        renderApp();
+      if (state.currentPage !== 'catalog' && state.currentPage !== 'file') return;
+      var box = document.getElementById('catalog-results');
+      if (box) {
+        box.innerHTML = renderCatalogCards(getCatalogList(box.getAttribute('data-my') === '1'));
+        ['global-search-input', 'catalog-search-input'].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el && el.value.toLowerCase() !== state.searchQuery) el.value = val;
+        });
+        return;
       }
+      renderApp();
     };
 
     window.openWhatsAppAdmin = function() {
@@ -1012,14 +1146,7 @@
           '</button>';
       }).join('');
 
-      bottomNavContainer.innerHTML = navItems.map(function(item) {
-        var active = state.currentPage === item.id;
-        return '<button type="button" onclick="navigateTo(\'' + item.id + '\')" class="flex flex-col items-center justify-center py-1 flex-1 transition-all ' +
-          (active ? 'text-accent-orange font-bold scale-105' : 'text-slate-400 hover:text-slate-600') + '">' +
-          '<i class="fa-solid ' + item.icon + ' text-base mb-0.5"></i>' +
-          '<span class="text-[10px] tracking-tight leading-none truncate max-w-[65px]">' + item.label + '</span>' +
-          '</button>';
-      }).join('');
+      bottomNavContainer.innerHTML = renderBottomNavHtml(role);
 
       var nameEl = document.getElementById('sidebar-user-name');
       var emailEl = document.getElementById('sidebar-user-email');
@@ -1036,260 +1163,334 @@
           else if (state.currentPage === 'catalog') topbarTitle.innerText = 'Katalog Modul';
           else if (state.currentPage === 'file') topbarTitle.innerText = isAdm ? 'Kelola Modul & Konten' : 'Modul Saya';
           else if (state.currentPage === 'messages') topbarTitle.innerText = 'Izin & Manajemen Member';
+          else if (state.currentPage === 'account') topbarTitle.innerText = 'Akun Saya';
           else if (state.currentPage === 'notification') topbarTitle.innerText = isAdm ? 'Pengaturan Kontak Admin' : 'Bantuan WhatsApp Admin';
         }
       } else {
         nameEl.innerText = 'GUEST VISITOR';
         emailEl.innerText = 'Mode Jelajah Katalog';
         avatarCircle.innerHTML = '<i class="fa-solid fa-user-secret"></i>';
-        if (topbarTitle) topbarTitle.innerText = 'Katalog Modul wanBOTT';
+        if (topbarTitle) topbarTitle.innerText = (state.currentPage === 'account') ? 'Akun Saya' : 'Katalog Modul wanBOTT';
       }
     }
 
     // ==========================================
-    // 9. VIEW: DASHBOARD UTAMA
+    // 9. VIEW: BERANDA (DESAIN APLIKASI MOBILE) + NAVIGASI BAWAH + AKUN
     // ==========================================
+    var HOME_CATEGORIES = ['Kelas Online', 'Link & Tools Web', 'Source Code', 'E-Book & Panduan', 'Template & Aset'];
+
+    function escHtml(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Gambar cover dengan cadangan gradasi bila belum ada foto (tanpa memuat gambar dari situs lain)
+    function coverImg(url, alt, cls) {
+      if (!url) {
+        return '<div class="' + cls + ' flex items-center justify-center text-white" style="background:linear-gradient(135deg,#1e3a8a,#3b82f6)"><i class="fa-regular fa-image opacity-80"></i></div>';
+      }
+      return '<img src="' + escHtml(url) + '" alt="' + escHtml(alt) + '" class="' + cls + '" loading="lazy" />';
+    }
+
+    window.openCategory = function(idx) {
+      state.activeCategory = idx < 0 ? 'Semua' : HOME_CATEGORIES[idx];
+      state.searchQuery = '';
+      var gi = document.getElementById('global-search-input');
+      if (gi) gi.value = '';
+      navigateTo('catalog');
+    };
+
+    window.continueLearning = function() {
+      var first = state.modules.find(function(m) { return checkHasAccess(m.id); });
+      if (first) openLessonViewer(first.id); else navigateTo('catalog');
+    };
+
+    window.quickAddModule = function() {
+      state.currentPage = 'file';
+      renderApp();
+      openModuleFormModal();
+    };
+
+    function dbIsOn() {
+      return isDbConnected() && !(typeof navigator !== 'undefined' && navigator.onLine === false) && !syncState.failed;
+    }
+
+    function homeMenuItems(role) {
+      var S = 'fa-solid ';
+      var accessible = state.modules.filter(function(m) { return checkHasAccess(m.id); }).length;
+      var items;
+      if (role === 'admin') {
+        items = [
+          { label: 'Katalog Modul', icon: S + 'fa-layer-group', c1: '#60a5fa', c2: '#1d4ed8', act: "navigateTo('catalog')", primary: true },
+          { label: 'Kelola Modul', icon: S + 'fa-folder-open', c1: '#fbbf24', c2: '#d97706', act: "navigateTo('file')" },
+          { label: 'Member & Izin', icon: S + 'fa-users-gear', c1: '#34d399', c2: '#059669', act: "navigateTo('messages')", badge: state.members.length },
+          { label: 'Pengaturan', icon: S + 'fa-sliders', c1: '#a78bfa', c2: '#6d28d9', act: "navigateTo('notification')" },
+          { label: 'Tambah Modul', icon: S + 'fa-circle-plus', c1: '#fb7185', c2: '#e11d48', act: 'quickAddModule()' },
+          { label: 'Muat Ulang', icon: S + 'fa-rotate', c1: '#38bdf8', c2: '#0284c7', act: 'manualSync()' },
+          { label: 'WhatsApp Admin', icon: 'fa-brands fa-whatsapp', c1: '#4ade80', c2: '#16a34a', act: 'openWhatsAppAdmin()' },
+          { label: 'Keluar', icon: S + 'fa-arrow-right-from-bracket', c1: '#94a3b8', c2: '#475569', act: 'handleAuthAction()' }
+        ];
+      } else if (role === 'member') {
+        items = [
+          { label: 'Katalog Modul', icon: S + 'fa-layer-group', c1: '#60a5fa', c2: '#1d4ed8', act: "navigateTo('catalog')", primary: true },
+          { label: 'Modul Saya', icon: S + 'fa-book-open', c1: '#fbbf24', c2: '#d97706', act: "navigateTo('file')", badge: accessible },
+          { label: 'Kelas Online', icon: S + 'fa-graduation-cap', c1: '#34d399', c2: '#059669', act: 'openCategory(0)' },
+          { label: 'Link & Tools', icon: S + 'fa-link', c1: '#38bdf8', c2: '#0284c7', act: 'openCategory(1)' },
+          { label: 'Source Code', icon: S + 'fa-code', c1: '#a78bfa', c2: '#6d28d9', act: 'openCategory(2)' },
+          { label: 'E-Book', icon: S + 'fa-book', c1: '#fb7185', c2: '#e11d48', act: 'openCategory(3)' },
+          { label: 'Template', icon: S + 'fa-palette', c1: '#f472b6', c2: '#be185d', act: 'openCategory(4)' },
+          { label: 'Bantuan Admin', icon: S + 'fa-headset', c1: '#4ade80', c2: '#16a34a', act: "navigateTo('notification')" }
+        ];
+      } else {
+        items = [
+          { label: 'Katalog Modul', icon: S + 'fa-layer-group', c1: '#60a5fa', c2: '#1d4ed8', act: "navigateTo('catalog')", primary: true },
+          { label: 'Masuk Akun', icon: S + 'fa-right-to-bracket', c1: '#fbbf24', c2: '#d97706', act: 'handleAuthAction()' },
+          { label: 'Kelas Online', icon: S + 'fa-graduation-cap', c1: '#34d399', c2: '#059669', act: 'openCategory(0)' },
+          { label: 'Link & Tools', icon: S + 'fa-link', c1: '#38bdf8', c2: '#0284c7', act: 'openCategory(1)' },
+          { label: 'Source Code', icon: S + 'fa-code', c1: '#a78bfa', c2: '#6d28d9', act: 'openCategory(2)' },
+          { label: 'E-Book', icon: S + 'fa-book', c1: '#fb7185', c2: '#e11d48', act: 'openCategory(3)' },
+          { label: 'Template', icon: S + 'fa-palette', c1: '#f472b6', c2: '#be185d', act: 'openCategory(4)' },
+          { label: 'WhatsApp Admin', icon: 'fa-brands fa-whatsapp', c1: '#4ade80', c2: '#16a34a', act: 'openWhatsAppAdmin()' }
+        ];
+      }
+      return items;
+    }
+
     function renderHomeDashboard() {
+      var role = state.currentUser ? state.currentUser.role : null;
+      var isAdm = role === 'admin';
       var totalMods = state.modules.length;
       var totalMems = state.members.length;
-      var totalGrants = state.accessGrants.filter(function(g) { 
-        return g.is_granted === true || g.is_granted === 'true' || g.is_granted === 1; 
-      }).length;
-      var totalDirectLinks = state.modules.filter(function(m) {
-        return (m.external_url && m.external_url.trim().length > 0) || m.is_free_preview;
-      }).length;
-
+      var isGranted = function(g) { return g.is_granted === true || g.is_granted === 'true' || g.is_granted === 1; };
+      var totalGrants = state.accessGrants.filter(isGranted).length;
       var freeMods = state.modules.filter(function(m) { return m.is_free_preview; }).length;
-      var maxPossible = (totalMods * totalMems) || 1;
-      var grantedPairs = state.accessGrants.filter(function(g) {
-        var gm = state.modules.find(function(m) { return String(m.id) === String(g.module_id); });
-        var gu = state.members.some(function(x) { return String(x.id) === String(g.member_id); });
-        return (g.is_granted === true || g.is_granted === 'true' || g.is_granted === 1) && gm && !gm.is_free_preview && gu;
-      }).length;
-      var openPairs = (totalMems * freeMods) + grantedPairs;
-      var accessPercent = (totalMods > 0 && totalMems > 0) ? Math.min(100, Math.round((openPairs / maxPossible) * 100)) : 0;
-      var strokeOffset = Math.round(238.7 * (1 - (accessPercent / 100)));
+      var accessible = state.modules.filter(function(m) { return checkHasAccess(m.id); }).length;
 
-      var categories = ['Kelas Online', 'Link Bebas', 'Source Code', 'E-Book', 'Template'];
-      var catCounts = [
-        state.modules.filter(function(m) { return m.category === 'Kelas Online'; }).length,
-        state.modules.filter(function(m) { return m.category === 'Link & Tools Web' || (m.external_url && m.external_url.length > 0); }).length,
-        state.modules.filter(function(m) { return m.category === 'Source Code'; }).length,
-        state.modules.filter(function(m) { return m.category === 'E-Book & Panduan'; }).length,
-        state.modules.filter(function(m) { return m.category === 'Template & Aset'; }).length
-      ];
-      var maxCat = Math.max.apply(null, catCounts.concat([3]));
-      var topModules = state.modules.slice(0, 4);
+      // ----- data kartu progres
+      var pct, title, bigHtml, btnLabel, btnAct;
+      if (isAdm) {
+        var maxPossible = (totalMods * totalMems) || 1;
+        var grantedPairs = state.accessGrants.filter(function(g) {
+          var gm = state.modules.find(function(m) { return String(m.id) === String(g.module_id); });
+          var gu = state.members.some(function(x) { return String(x.id) === String(g.member_id); });
+          return isGranted(g) && gm && !gm.is_free_preview && gu;
+        }).length;
+        var openPairs = (totalMems * freeMods) + grantedPairs;
+        pct = (totalMods > 0 && totalMems > 0) ? Math.min(100, Math.round((openPairs / maxPossible) * 100)) : 0;
+        title = 'Tingkat Izin Terbuka';
+        bigHtml = '<em>' + totalGrants + '</em> izin khusus <small>aktif</small>';
+        btnLabel = 'Kelola Modul'; btnAct = "navigateTo('file')";
+      } else {
+        pct = totalMods > 0 ? Math.round((accessible / totalMods) * 100) : 0;
+        title = role === 'member' ? 'Akses Belajar Kamu' : 'Materi Gratis Untuk Kamu';
+        bigHtml = '<em>' + accessible + '</em> dari ' + totalMods + ' Materi <small>' + (role === 'member' ? 'Terbuka' : 'Gratis') + '</small>';
+        if (role === 'member') { btnLabel = accessible > 0 ? 'Lanjut Belajar' : 'Lihat Katalog'; btnAct = accessible > 0 ? 'continueLearning()' : "navigateTo('catalog')"; }
+        else { btnLabel = 'Masuk Akun'; btnAct = 'handleAuthAction()'; }
+      }
+      var circ = 213.63;
+      var offset = Math.round(circ * (1 - pct / 100) * 100) / 100;
 
-      return '<div class="space-y-6">' +
-        '<!-- 1. TOP 4 METRIC CARDS ROW -->' +
-        '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">' +
-          
-          '<div class="navy-card p-5 relative overflow-hidden flex flex-col justify-between h-32 cursor-pointer hover:shadow-xl transition-all" onclick="navigateTo(\'catalog\')">' +
-            '<div class="flex items-center justify-between">' +
-              '<span class="text-xs font-semibold text-slate-200">Total Modul & Produk</span>' +
-              '<div class="w-7 h-7 rounded-full bg-white text-navy-900 flex items-center justify-center text-xs font-black shadow-sm">' +
-                '<i class="fa-solid fa-layer-group"></i>' +
-              '</div>' +
-            '</div>' +
-            '<div>' +
-              '<h3 class="text-3xl font-extrabold tracking-tight text-white">' + totalMods + '</h3>' +
-              '<p class="text-[11px] text-slate-300 mt-1">Materi & Produk Aktif</p>' +
-            '</div>' +
+      // ----- sapaan
+      var greetName = !state.currentUser ? 'Tamu' : (isAdm ? 'Admin' : String(state.currentUser.data.full_name || 'Peserta').split(' ')[0]);
+      var greetSub = !state.currentUser ? 'Mode Tamu - Jelajah Katalog' : (isAdm ? 'Administrator wanBOTT' : 'Member wanBOTT');
+      var on = dbIsOn();
+
+      var html = '<div class="home-wrap">' +
+        '<section class="home-hero">' +
+          '<div class="home-top">' +
+            '<div class="home-avatar"><img data-app-logo alt="wanBOTT" /></div>' +
+            '<div class="home-hello"><h2>Halo, ' + escHtml(greetName) + ',</h2><p>' + greetSub + '</p></div>' +
+            '<div class="home-pill" title="' + (on ? 'Database tersambung' : 'Mode lokal / offline') + '"><span class="' + (on ? 'on' : '') + '">ON</span><span class="' + (on ? '' : 'on') + '">OFF</span></div>' +
+            '<button type="button" class="home-help" onclick="openWhatsAppAdmin()" aria-label="Bantuan WhatsApp Admin" title="Bantuan WhatsApp Admin"><i class="fa-solid fa-headset"></i></button>' +
           '</div>' +
-
-          '<div class="dashboard-card p-5 relative overflow-hidden flex flex-col justify-between h-32 cursor-pointer hover:shadow-md transition-all" onclick="navigateTo(\'messages\')">' +
-            '<div class="flex items-center justify-between">' +
-              '<span class="text-xs font-semibold text-slate-500">Total Peserta</span>' +
-              '<div class="text-accent-orange text-base">' +
-                '<i class="fa-solid fa-users"></i>' +
-              '</div>' +
-            '</div>' +
-            '<div>' +
-              '<h3 class="text-3xl font-extrabold tracking-tight text-slate-800">' + totalMems + '</h3>' +
-              '<p class="text-[11px] text-slate-400 mt-1">Peserta Terdaftar</p>' +
-            '</div>' +
+          '<div class="home-progress">' +
+            '<div class="ring"><svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="#cbd5e1" stroke-width="9" opacity=".85"/>' +
+              '<circle cx="40" cy="40" r="34" fill="none" stroke="#22c55e" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/></svg><b>' + pct + '%</b></div>' +
+            '<div class="min-w-0 flex-1"><h4>' + title + '</h4><div class="big">' + bigHtml + '</div><div class="pbar"><i style="width:' + pct + '%"></i></div></div>' +
+            '<button type="button" class="home-continue" onclick="' + btnAct + '"><span>' + btnLabel + '</span><i class="fa-solid fa-arrow-right"></i></button>' +
           '</div>' +
+        '</section>';
 
-          '<div class="dashboard-card p-5 relative overflow-hidden flex flex-col justify-between h-32 cursor-pointer hover:shadow-md transition-all" onclick="navigateTo(\'messages\')">' +
-            '<div class="flex items-center justify-between">' +
-              '<span class="text-xs font-semibold text-slate-500">Izin Akses Aktif</span>' +
-              '<div class="text-accent-orange text-base">' +
-                '<i class="fa-solid fa-unlock-keyhole"></i>' +
-              '</div>' +
-            '</div>' +
-            '<div>' +
-              '<h3 class="text-3xl font-extrabold tracking-tight text-slate-800">' + totalGrants + '</h3>' +
-              '<p class="text-[11px] text-slate-400 mt-1">Izin Khusus (di luar modul gratis)</p>' +
-            '</div>' +
-          '</div>' +
+      // ----- Menu Utama
+      html += '<section class="home-section first"><h3 class="home-title">Menu Utama</h3><div class="menu-grid">' +
+        homeMenuItems(role).map(function(it) {
+          return '<button type="button" class="menu-tile' + (it.primary ? ' is-primary' : '') + '" onclick="' + it.act + '">' +
+            (it.badge ? '<span class="menu-badge">' + it.badge + '</span>' : '') +
+            '<span class="ico3d" style="--c1:' + it.c1 + ';--c2:' + it.c2 + '"><i class="' + it.icon + '"></i></span>' +
+            '<span>' + it.label + '</span></button>';
+        }).join('') + '</div></section>';
 
-          '<div class="dashboard-card p-5 relative overflow-hidden flex flex-col justify-between h-32 cursor-pointer hover:shadow-md transition-all" onclick="navigateTo(\'catalog\')">' +
-            '<div class="flex items-center justify-between">' +
-              '<span class="text-xs font-semibold text-slate-500">Link Bebas / Gratis</span>' +
-              '<div class="text-accent-orange text-base">' +
-                '<i class="fa-solid fa-arrow-up-right-from-square"></i>' +
-              '</div>' +
-            '</div>' +
-            '<div>' +
-              '<h3 class="text-3xl font-extrabold tracking-tight text-slate-800">' + totalDirectLinks + '</h3>' +
-              '<p class="text-[11px] text-slate-400 mt-1">Tautan Langsung Siap Pakai</p>' +
-            '</div>' +
-          '</div>' +
+      // ----- Kategori Modul (carousel)
+      html += '<section class="home-section"><div class="cat-head"><h3 class="home-title" style="margin:0">Kategori Modul</h3>' +
+        '<button type="button" onclick="openCategory(-1)">Lihat Semua</button></div><div class="cat-row">' +
+        HOME_CATEGORIES.map(function(cat, i) {
+          var mods = state.modules.filter(function(m) { return m.category === cat; });
+          var acc = mods.filter(function(m) { return checkHasAccess(m.id); }).length;
+          var p = mods.length ? Math.round((acc / mods.length) * 100) : 0;
+          var locked = !isAdm && mods.length > 0 && acc === 0;
+          return '<button type="button" class="cat-card' + (i % 2 ? ' alt' : '') + '" onclick="openCategory(' + i + ')">' +
+            '<h5>' + escHtml(cat) + '</h5><p>*' + mods.length + ' Materi</p>' +
+            '<div class="row"><div class="pb"><i style="width:' + p + '%"></i></div><span class="pc">' + p + '%</span></div>' +
+            (locked ? '<i class="fa-solid fa-lock lock"></i>' : '') + '</button>';
+        }).join('') + '</div></section>';
 
-        '</div>' +
+      // ----- Ringkasan (admin)
+      if (isAdm) {
+        var directLinks = state.modules.filter(function(m) { return (m.external_url && m.external_url.trim().length > 0) || m.is_free_preview; }).length;
+        html += '<section class="home-section"><h3 class="home-title">Ringkasan</h3><div class="stat-grid">' +
+          '<div class="stat"><b>' + totalMods + '</b><small>Total Modul & Produk</small></div>' +
+          '<div class="stat"><b>' + totalMems + '</b><small>Peserta Terdaftar</small></div>' +
+          '<div class="stat"><b>' + totalGrants + '</b><small>Izin Khusus Aktif</small></div>' +
+          '<div class="stat"><b>' + directLinks + '</b><small>Link Bebas / Gratis</small></div>' +
+        '</div></section>';
+      }
 
-        '<!-- 2. MIDDLE & LOWER GRID -->' +
-        '<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">' +
-          
-          '<div class="lg:col-span-2 space-y-5">' +
-            
-            '<div class="dashboard-card p-6">' +
-              '<div class="flex items-center justify-between mb-4">' +
-                '<div>' +
-                  '<h4 class="text-sm font-bold text-slate-800">Distribusi Kategori Materi & Modul</h4>' +
-                  '<p class="text-[11px] text-slate-400 mt-0.5">Komposisi produk digital dan kursus aktif dalam platform</p>' +
-                '</div>' +
-                '<button type="button" onclick="navigateTo(\'catalog\')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-accent-orange hover:bg-amber-600 text-white shadow-sm transition-all">' +
-                  'Lihat Katalog' +
-                '</button>' +
-              '</div>' +
+      // ----- Modul Pilihan
+      var top = state.modules.slice(0, 4);
+      html += '<section class="home-section"><h3 class="home-title">Modul Pilihan</h3>' +
+        (top.length ? top.map(function(m) {
+          var unlocked = checkHasAccess(m.id);
+          var tag = isAdm ? (m.is_free_preview ? '<span class="tag free">Gratis</span>' : '<span class="tag open">Lisensi</span>')
+                          : (unlocked ? (m.is_free_preview ? '<span class="tag free">Gratis</span>' : '<span class="tag open">Terbuka</span>') : '<span class="tag lock"><i class="fa-solid fa-lock"></i> Terkunci</span>');
+          return '<button type="button" class="mod-row" onclick="' + (unlocked ? 'openLessonViewer' : 'promptUnlock') + '(\'' + m.id + '\')">' +
+            '<span class="mod-thumb">' + (m.cover_url ? '<img src="' + escHtml(m.cover_url) + '" alt="" loading="lazy" />' : '<i class="fa-regular fa-image"></i>') + '</span>' +
+            '<span class="mod-info"><b>' + escHtml(m.title) + '</b><small>' + escHtml(m.category) + (m.external_url ? ' - Link Bebas' : '') + '</small></span>' + tag + '</button>';
+        }).join('') : '<p class="text-xs text-slate-500 text-center py-6">Belum ada modul ditambahkan.</p>') +
+        '</section></div>';
 
-              '<div class="relative pt-6 pb-2">' +
-                '<div class="flex items-end justify-around h-40 gap-3 px-2 border-b border-slate-100">' +
-                  categories.map(function(cat, idx) {
-                    var val = catCounts[idx];
-                    var hPercent = Math.max(15, Math.round((val / maxCat) * 85));
-                    var isTop = val === Math.max.apply(null, catCounts) && val > 0;
-                    return '<div class="flex flex-col items-center flex-1 h-full justify-end gap-1.5 relative">' +
-                      (isTop ? '<div class="absolute -top-7 px-2 py-0.5 rounded bg-navy-900 text-white text-[9px] font-bold shadow">' + val + ' Modul</div>' : '') +
-                      '<div class="flex items-end gap-1.5 w-full justify-center h-full">' +
-                        '<div class="w-3 sm:w-4 bg-accent-orange rounded-t" style="height: ' + Math.max(10, Math.round(hPercent * 0.6)) + '%;"></div>' +
-                        '<div class="w-3 sm:w-4 bg-navy-900 rounded-t" style="height: ' + hPercent + '%;"></div>' +
-                      '</div>' +
-                      '<span class="text-[9px] font-bold text-slate-500 mt-1 truncate max-w-[70px] text-center">' + cat + '</span>' +
-                    '</div>';
-                  }).join('') +
+      return html;
+    }
 
-                  '<div class="hidden sm:flex flex-col justify-center gap-2 pl-4 border-l border-slate-100 text-[10px] text-slate-500 font-bold shrink-0">' +
-                    '<div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-navy-900 rounded-sm"></span> Total Item</div>' +
-                    '<div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-accent-orange rounded-sm"></span> Akses Aktif</div>' +
-                  '</div>' +
-                '</div>' +
-              '</div>' +
-            '</div>' +
-
-            '<div class="dashboard-card p-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">' +
-              '<div class="md:col-span-2 space-y-3">' +
-                '<div class="flex items-center justify-between">' +
-                  '<div class="flex items-center gap-4 text-xs font-bold text-slate-600">' +
-                    '<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-accent-orange"></span> Modul Dibuka</span>' +
-                    '<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-navy-900"></span> Modul Terkunci</span>' +
-                  '</div>' +
-                  '<span class="text-[11px] text-slate-400 font-semibold">Trafik Belajar Mingguan</span>' +
-                '</div>' +
-                '<div class="h-28 w-full relative">' +
-                  '<svg class="w-full h-full" viewBox="0 0 500 150" preserveAspectRatio="none">' +
-                    '<defs>' +
-                      '<linearGradient id="orangeGrad" x1="0" y1="0" x2="0" y2="1">' +
-                        '<stop offset="0%" stop-color="#f59e0b" stop-opacity="0.8"/>' +
-                        '<stop offset="100%" stop-color="#f59e0b" stop-opacity="0.05"/>' +
-                      '</linearGradient>' +
-                      '<linearGradient id="navyGrad" x1="0" y1="0" x2="0" y2="1">' +
-                        '<stop offset="0%" stop-color="#132f4c" stop-opacity="0.6"/>' +
-                        '<stop offset="100%" stop-color="#132f4c" stop-opacity="0.0"/>' +
-                      '</linearGradient>' +
-                    '</defs>' +
-                    '<path d="M0,130 C120,40 180,120 250,50 C320,10 400,100 500,60 L500,150 L0,150 Z" fill="url(#navyGrad)"/>' +
-                    '<path d="M0,130 C120,40 180,120 250,50 C320,10 400,100 500,60" fill="none" stroke="#132f4c" stroke-width="2.5"/>' +
-                    '<path d="M0,140 C80,110 150,60 210,120 C280,10 330,130 500,110 L500,150 L0,150 Z" fill="url(#orangeGrad)"/>' +
-                    '<path d="M0,140 C80,110 150,60 210,120 C280,10 330,130 500,110" fill="none" stroke="#f59e0b" stroke-width="2.5"/>' +
-                  '</svg>' +
-                '</div>' +
-              '</div>' +
-
-              '<div class="border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-5 text-center">' +
-                '<p class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wider">Aktivitas Hari Ini</p>' +
-                '<div class="grid grid-cols-7 gap-1 text-[10px] font-bold text-slate-400 mb-1">' +
-                  '<span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>' +
-                '</div>' +
-                '<div class="grid grid-cols-7 gap-1 text-[9px] font-medium text-slate-600">' +
-                  '<span class="text-slate-300"></span><span class="text-slate-300"></span><span class="text-slate-300"></span><span class="text-slate-300"></span><span class="text-slate-300"></span><span>1</span><span>2</span>' +
-                  '<span>3</span><span class="bg-navy-900 text-white rounded font-bold">4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>' +
-                  '<span>10</span><span>11</span><span>12</span><span class="bg-navy-900 text-white rounded font-bold">13</span><span>14</span><span>15</span><span>16</span>' +
-                  '<span>17</span><span>18</span><span>19</span><span class="bg-accent-orange text-white rounded font-bold">20</span><span>21</span><span>22</span><span>23</span>' +
-                '</div>' +
-              '</div>' +
-            '</div>' +
-
-          '</div>' +
-
-          '<div class="dashboard-card p-6 flex flex-col justify-between space-y-6">' +
-            '<div class="flex flex-col items-center pt-2">' +
-              '<span class="text-xs font-bold text-slate-700 mb-3">Tingkat Izin Terbuka</span>' +
-              '<div class="relative w-36 h-36 flex items-center justify-center">' +
-                '<svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">' +
-                  '<circle cx="50" cy="50" r="38" stroke="#132f4c" stroke-width="12" fill="none" />' +
-                  '<circle cx="50" cy="50" r="38" stroke="#f59e0b" stroke-width="12" fill="none" stroke-dasharray="238.7" stroke-dashoffset="' + strokeOffset + '" stroke-linecap="round" />' +
-                '</svg>' +
-                '<div class="absolute inset-0 flex flex-col items-center justify-center">' +
-                  '<span class="text-2xl font-black text-slate-800">' + accessPercent + '%</span>' +
-                  '<span class="text-[10px] text-slate-400 font-semibold">Izin Aktif</span>' +
-                '</div>' +
-              '</div>' +
-            '</div>' +
-
-            '<div class="space-y-2 border-t border-slate-100 pt-4">' +
-              '<p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Modul & Link Pilihan</p>' +
-              (topModules.length > 0 ? topModules.map(function(m) {
-                return '<div onclick="openLessonViewer(\'' + m.id + '\')" class="p-2 rounded-xl hover:bg-slate-50 cursor-pointer flex items-center justify-between text-left transition-colors group">' +
-                  '<div class="flex items-center gap-2 min-w-0 pr-2">' +
-                    '<i class="fa-solid ' + (m.external_url ? 'fa-arrow-up-right-from-square text-accent-orange' : 'fa-circle-play text-navy-900') + ' text-xs shrink-0"></i>' +
-                    '<span class="text-xs font-semibold text-slate-700 group-hover:text-navy-900 truncate">' + m.title + '</span>' +
-                  '</div>' +
-                  '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 shrink-0">' + (m.is_free_preview ? 'Gratis' : 'Lisensi') + '</span>' +
-                '</div>';
-              }).join('') : '<p class="text-xs text-slate-400 text-center py-4">Belum ada modul ditambahkan.</p>') +
-            '</div>' +
-
-            '<button type="button" onclick="navigateTo(\'catalog\')" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-accent-orange hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 transition-all text-center flex items-center justify-center gap-2">' +
-              '<i class="fa-solid fa-compass"></i> Buka Katalog Modul' +
-            '</button>' +
-          '</div>' +
-
-        '</div>' +
+    // ----- Navigasi bawah (mobile)
+    function renderBottomNavHtml(role) {
+      var page = state.currentPage === 'view-module' ? 'catalog' : state.currentPage;
+      var center, third;
+      if (role === 'admin') {
+        center = { page: 'file', icon: 'fa-solid fa-folder-open', label: 'Kelola Modul' };
+        third = { page: 'messages', icon: 'fa-solid fa-users-gear', label: 'Member dan Izin' };
+      } else if (role === 'member') {
+        center = { page: 'file', icon: 'fa-solid fa-book-open', label: 'Modul Saya' };
+        third = { page: 'notification', icon: 'fa-solid fa-headset', label: 'Bantuan Admin' };
+      } else {
+        center = { act: 'handleAuthAction()', icon: 'fa-solid fa-right-to-bracket', label: 'Masuk Akun' };
+        third = { act: 'openWhatsAppAdmin()', icon: 'fa-solid fa-headset', label: 'Bantuan Admin' };
+      }
+      var btn = function(item, cls) {
+        var click = item.act ? item.act : "navigateTo('" + item.page + "')";
+        var active = item.page && item.page === page;
+        return '<button type="button" class="' + (cls || '') + (active ? ' active' : '') + '" onclick="' + click + '" aria-label="' + item.label + '" title="' + item.label + '"><i class="' + item.icon + '"></i></button>';
+      };
+      return '<div class="bnav">' +
+        btn({ page: 'home', icon: 'fa-solid fa-house', label: 'Beranda' }) +
+        btn({ page: 'catalog', icon: 'fa-solid fa-magnifying-glass', label: 'Cari Katalog Modul' }) +
+        '<div class="bnav-center">' + btn(center, 'center-btn') + '</div>' +
+        btn(third) +
+        btn({ page: 'account', icon: 'fa-solid fa-user', label: 'Akun Saya' }) +
       '</div>';
+    }
+
+    // ----- Halaman Akun
+    function renderAccountView() {
+      var u = state.currentUser;
+      var isAdm = !!u && u.role === 'admin';
+      var name = !u ? 'Tamu' : (isAdm ? 'Administrator' : (u.data.full_name || 'Member'));
+      var sub = !u ? 'Mode jelajah katalog' : (isAdm ? (u.data.email || 'admin@wanbott.local') : '@' + (u.data.username || 'member'));
+      var roleLabel = !u ? 'Tamu' : (isAdm ? 'Administrator' : 'Member');
+      var row = function(icon, c1, c2, label, desc, act) {
+        return '<button type="button" class="mod-row" onclick="' + act + '">' +
+          '<span class="ico3d" style="--c1:' + c1 + ';--c2:' + c2 + '"><i class="' + icon + '"></i></span>' +
+          '<span class="mod-info"><b>' + label + '</b><small>' + desc + '</small></span>' +
+          '<i class="fa-solid fa-chevron-right text-slate-400 text-xs"></i></button>';
+      };
+      return '<div class="max-w-xl mx-auto pt-3 space-y-5">' +
+        '<div class="account-card"><div class="home-avatar"><img data-app-logo alt="wanBOTT" /></div>' +
+          '<h3 class="text-lg font-extrabold">' + escHtml(name) + '</h3>' +
+          '<p class="text-xs opacity-90 mt-0.5">' + escHtml(sub) + '</p>' +
+          '<span class="inline-block mt-3 px-3 py-1 rounded-full bg-white/20 text-[11px] font-bold">' + roleLabel + '</span></div>' +
+        '<div>' +
+          row('fa-brands fa-whatsapp', '#4ade80', '#16a34a', 'Hubungi WhatsApp Admin', 'Tanya akses modul atau minta bantuan', 'openWhatsAppAdmin()') +
+          (isAdm ? row('fa-solid fa-sliders', '#a78bfa', '#6d28d9', 'Pengaturan Kontak', 'Ubah nomor WhatsApp administrator', "navigateTo('notification')") : '') +
+          row('fa-solid fa-download', '#38bdf8', '#0284c7', 'Pasang Aplikasi', 'Tambahkan wanBOTT ke layar utama', 'triggerInstallApp()') +
+          (u ? row('fa-solid fa-arrow-right-from-bracket', '#94a3b8', '#475569', 'Keluar Akun', 'Akhiri sesi di perangkat ini', 'handleAuthAction()')
+             : row('fa-solid fa-right-to-bracket', '#fbbf24', '#d97706', 'Masuk Akun', 'Masuk sebagai administrator atau peserta', 'handleAuthAction()')) +
+        '</div></div>';
     }
 
     // ==========================================
     // 10. VIEW: KATALOG MODUL & PRODUK DIGITAL
     // ==========================================
-    function renderCatalogView(isMyModulesOnly) {
-      var categories = ['Semua', 'Link & Tools Web', 'Kelas Online', 'Source Code', 'E-Book & Panduan', 'Template & Aset'];
-
+    function getCatalogList(isMyModulesOnly) {
+      var q = state.searchQuery || '';
       var list = state.modules.filter(function(m) {
-        var matchSearch = m.title.toLowerCase().indexOf(state.searchQuery) !== -1 || m.description.toLowerCase().indexOf(state.searchQuery) !== -1;
+        var matchSearch = String(m.title || '').toLowerCase().indexOf(q) !== -1 || String(m.description || '').toLowerCase().indexOf(q) !== -1;
         var matchCategory = state.activeCategory === 'Semua' || m.category === state.activeCategory;
         return matchSearch && matchCategory;
       });
+      if (isMyModulesOnly) list = list.filter(function(m) { return checkHasAccess(m.id); });
+      return list;
+    }
 
-      if (isMyModulesOnly) {
-        if (!state.currentUser) {
-          return '<div class="dashboard-card p-10 text-center max-w-md mx-auto my-12">' +
-            '<div class="w-16 h-16 rounded-2xl bg-amber-50 text-accent-orange flex items-center justify-center mx-auto mb-4 text-2xl">' +
-              '<i class="fa-solid fa-lock"></i>' +
+    function renderCatalogCards(list) {
+      if (list.length === 0) {
+        return '<div class="dashboard-card p-12 text-center text-slate-400">' +
+          '<i class="fa-solid fa-folder-open text-4xl mb-3"></i>' +
+          '<p class="text-xs font-semibold">Tidak ada modul yang ditemukan.</p>' +
+        '</div>';
+      }
+      return '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">' + list.map(function(mod) {
+        var unlocked = checkHasAccess(mod.id);
+        var hasDirectLink = mod.external_url && mod.external_url.trim().length > 0;
+
+        return '<div class="dashboard-card overflow-hidden flex flex-col group hover:-translate-y-1 transition-all duration-300">' +
+          '<div class="relative h-44 w-full bg-slate-200 overflow-hidden">' +
+            coverImg(mod.cover_url, mod.title, 'w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 text-3xl') +
+            '<div class="absolute top-3 left-3 flex flex-col gap-1 items-start">' +
+              '<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-white/95 text-slate-700 shadow-sm">' + mod.category + '</span>' +
+              (hasDirectLink ? '<span class="px-2 py-0.5 rounded-lg text-[9px] font-extrabold bg-accent-orange text-white shadow-sm flex items-center gap-1"><i class="fa-solid fa-arrow-up-right-from-square"></i> Link Bebas</span>' : '') +
             '</div>' +
-            '<h3 class="text-base font-bold text-slate-800">Akses Modul Anda</h3>' +
-            '<p class="text-xs text-slate-500 mt-1.5 mb-6">Silakan masuk dengan akun peserta Anda untuk melihat materi yang sudah dibuka oleh Admin.</p>' +
-            '<button type="button" onclick="handleAuthAction()" class="px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-950 text-white font-bold text-xs shadow-md">' +
-              'Masuk ke Akun' +
-            '</button>' +
-          '</div>';
-        }
-        list = list.filter(function(m) { return checkHasAccess(m.id); });
+            '<div class="absolute top-3 right-3">' +
+              (unlocked
+                ? '<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500 text-white shadow-sm flex items-center gap-1"><i class="fa-solid fa-unlock"></i> Terbuka</span>'
+                : '<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500 text-white shadow-sm flex items-center gap-1"><i class="fa-solid fa-lock"></i> Terkunci</span>') +
+            '</div>' +
+          '</div>' +
+          '<div class="p-5 flex-1 flex flex-col justify-between">' +
+            '<div>' +
+              '<h4 class="font-bold text-slate-800 text-sm leading-snug line-clamp-2">' + mod.title + '</h4>' +
+              '<p class="text-xs text-slate-500 mt-2 line-clamp-2">' + mod.description + '</p>' +
+            '</div>' +
+            '<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">' +
+              (unlocked
+                ? (hasDirectLink
+                    ? '<button type="button" onclick="openLessonViewer(\'' + mod.id + '\')" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-accent-orange hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 transition-all"><i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Tautan Langsung</button>'
+                    : '<button type="button" onclick="openLessonViewer(\'' + mod.id + '\')" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-navy-900 hover:bg-navy-950 text-white shadow-md flex items-center justify-center gap-1.5 transition-all"><i class="fa-solid fa-play"></i> Buka Materi</button>')
+                : '<button type="button" onclick="promptUnlock(\'' + mod.id + '\')" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white flex items-center justify-center gap-1.5 transition-all"><i class="fa-brands fa-whatsapp text-emerald-400"></i> Minta Akses Admin</button>') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('') + '</div>';
+    }
+
+    function renderCatalogView(isMyModulesOnly) {
+      var categories = ['Semua', 'Link & Tools Web', 'Kelas Online', 'Source Code', 'E-Book & Panduan', 'Template & Aset'];
+
+      if (isMyModulesOnly && !state.currentUser) {
+        return '<div class="dashboard-card p-10 text-center max-w-md mx-auto my-12">' +
+          '<div class="w-16 h-16 rounded-2xl bg-amber-50 text-accent-orange flex items-center justify-center mx-auto mb-4 text-2xl">' +
+            '<i class="fa-solid fa-lock"></i>' +
+          '</div>' +
+          '<h3 class="text-base font-bold text-slate-800">Akses Modul Anda</h3>' +
+          '<p class="text-xs text-slate-500 mt-1.5 mb-6">Silakan masuk dengan akun peserta Anda untuk melihat materi yang sudah dibuka oleh Admin.</p>' +
+          '<button type="button" onclick="handleAuthAction()" class="px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-950 text-white font-bold text-xs shadow-md">' +
+            'Masuk ke Akun' +
+          '</button>' +
+        '</div>';
       }
 
-      var html = '<div class="space-y-6">' +
+      return '<div class="space-y-5 pt-1">' +
+        '<div class="sm:hidden flex items-center gap-2 bg-white px-3.5 py-2.5 rounded-2xl border border-blue-100 shadow-sm">' +
+          '<i class="fa-solid fa-magnifying-glass text-slate-400 text-xs"></i>' +
+          '<input type="text" id="catalog-search-input" value="' + escHtml(state.searchQuery) + '" oninput="handleSearchModule(this.value)" placeholder="Cari modul..." class="bg-transparent text-xs w-full focus:outline-none text-slate-700" />' +
+        '</div>' +
         '<div class="flex items-center gap-2 overflow-x-auto pb-1">' +
           categories.map(function(cat) {
             var active = state.activeCategory === cat;
@@ -1298,53 +1499,9 @@
               cat +
               '</button>';
           }).join('') +
-        '</div>';
-
-      if (list.length === 0) {
-        html += '<div class="dashboard-card p-12 text-center text-slate-400">' +
-          '<i class="fa-solid fa-folder-open text-4xl mb-3"></i>' +
-          '<p class="text-xs font-semibold">Tidak ada modul yang ditemukan.</p>' +
-        '</div>';
-      } else {
-        html += '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">';
-        html += list.map(function(mod) {
-          var unlocked = checkHasAccess(mod.id);
-          var cover = mod.cover_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600';
-          var hasDirectLink = mod.external_url && mod.external_url.trim().length > 0;
-
-          return '<div class="dashboard-card overflow-hidden flex flex-col group hover:-translate-y-1 transition-all duration-300">' +
-            '<div class="relative h-44 w-full bg-slate-200 overflow-hidden">' +
-              '<img src="' + cover + '" alt="' + mod.title + '" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />' +
-              '<div class="absolute top-3 left-3 flex flex-col gap-1 items-start">' +
-                '<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-white/95 text-slate-700 shadow-sm">' + mod.category + '</span>' +
-                (hasDirectLink ? '<span class="px-2 py-0.5 rounded-lg text-[9px] font-extrabold bg-accent-orange text-white shadow-sm flex items-center gap-1"><i class="fa-solid fa-arrow-up-right-from-square"></i> Link Bebas</span>' : '') +
-              '</div>' +
-              '<div class="absolute top-3 right-3">' +
-                (unlocked 
-                  ? '<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-500 text-white shadow-sm flex items-center gap-1"><i class="fa-solid fa-unlock"></i> Terbuka</span>'
-                  : '<span class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-500 text-white shadow-sm flex items-center gap-1"><i class="fa-solid fa-lock"></i> Terkunci</span>') +
-              '</div>' +
-            '</div>' +
-            '<div class="p-5 flex-1 flex flex-col justify-between">' +
-              '<div>' +
-                '<h4 class="font-bold text-slate-800 text-sm leading-snug line-clamp-2">' + mod.title + '</h4>' +
-                '<p class="text-xs text-slate-500 mt-2 line-clamp-2">' + mod.description + '</p>' +
-              '</div>' +
-              '<div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">' +
-                (unlocked
-                  ? (hasDirectLink 
-                      ? '<button type="button" onclick="openLessonViewer(\'' + mod.id + '\')" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-accent-orange hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 transition-all"><i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Tautan Langsung</button>'
-                      : '<button type="button" onclick="openLessonViewer(\'' + mod.id + '\')" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-navy-900 hover:bg-navy-950 text-white shadow-md flex items-center justify-center gap-1.5 transition-all"><i class="fa-solid fa-play"></i> Buka Materi</button>')
-                  : '<button type="button" onclick="promptUnlock(\'' + mod.id + '\')" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white flex items-center justify-center gap-1.5 transition-all"><i class="fa-brands fa-whatsapp text-emerald-400"></i> Minta Akses Admin</button>') +
-              '</div>' +
-            '</div>' +
-          '</div>';
-        }).join('');
-        html += '</div>';
-      }
-
-      html += '</div>';
-      return html;
+        '</div>' +
+        '<div id="catalog-results" data-my="' + (isMyModulesOnly ? '1' : '0') + '">' + renderCatalogCards(getCatalogList(isMyModulesOnly)) + '</div>' +
+      '</div>';
     }
 
     // ==========================================
@@ -1407,7 +1564,7 @@
         }
       } else {
         videoHtml = '<div class="h-48 relative bg-navy-900 overflow-hidden flex items-center justify-center p-6 text-white text-center">' +
-          '<img src="' + (mod.cover_url || '') + '" class="absolute inset-0 w-full h-full object-cover opacity-20" />' +
+          (mod.cover_url ? '<img src="' + escHtml(mod.cover_url) + '" class="absolute inset-0 w-full h-full object-cover opacity-20" />' : '') +
           '<div class="relative z-10 max-w-lg">' +
             '<span class="px-2.5 py-1 rounded-lg bg-white/20 text-[10px] font-bold uppercase tracking-wider">' + mod.category + '</span>' +
             '<h2 class="text-xl sm:text-2xl font-black mt-2">' + mod.title + '</h2>' +
@@ -1477,7 +1634,7 @@
                 state.modules.map(function(m) {
                   return '<tr class="hover:bg-slate-50/50 transition-colors">' +
                     '<td class="p-4 flex items-center gap-3">' +
-                      '<img src="' + (m.cover_url || 'https://via.placeholder.com/80') + '" class="w-12 h-10 object-cover rounded-lg shrink-0" />' +
+                      coverImg(m.cover_url, m.title, 'w-12 h-10 object-cover rounded-lg shrink-0') +
                       '<div>' +
                         '<p class="font-bold text-slate-800 flex items-center gap-1.5">' + 
                           m.title + 
@@ -1515,6 +1672,7 @@
       if (form) form.reset();
       document.getElementById('mod-id').value = '';
       document.getElementById('mod-external-url').value = '';
+      resetCoverUploader('');
       document.getElementById('module-form-title').innerText = "Tambah Modul Baru";
       document.getElementById('modal-module-form').classList.remove('hidden');
     };
@@ -1525,7 +1683,7 @@
       document.getElementById('mod-id').value = m.id;
       document.getElementById('mod-title').value = m.title;
       document.getElementById('mod-category').value = m.category;
-      document.getElementById('mod-cover-url').value = m.cover_url || '';
+      resetCoverUploader(m.cover_url || '');
       document.getElementById('mod-external-url').value = m.external_url || '';
       document.getElementById('mod-video-url').value = m.video_url || '';
       document.getElementById('mod-download-url').value = m.download_url || '';
@@ -1537,13 +1695,181 @@
       document.getElementById('modal-module-form').classList.remove('hidden');
     };
 
+    // ----- Upload foto cover modul (pilih file langsung, tanpa URL) -----
+    var COVER_BUCKET = 'module-covers';
+    var coverState = { blob: null, previewUrl: null, removed: false };
+    var savingModule = false;
+    var COVER_INFO_DEFAULT = 'Pilih foto dari galeri atau kamera (JPG/PNG/WebP). Foto otomatis diperkecil sebelum diunggah.';
+
+    function fmtSize(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+    function setCoverInfo(t) { var el = document.getElementById('cover-file-info'); if (el) el.textContent = t; }
+
+    function setCoverPreview(url) {
+      var img = document.getElementById('cover-preview-img');
+      var empty = document.getElementById('cover-preview-empty');
+      var rm = document.getElementById('btn-remove-cover');
+      var txt = document.getElementById('btn-pick-cover-text');
+      if (!img) return;
+      if (url) {
+        img.src = url; img.classList.remove('hidden'); empty.classList.add('hidden');
+        rm.classList.remove('hidden'); rm.classList.add('inline-flex'); txt.textContent = 'Ganti Foto';
+      } else {
+        img.removeAttribute('src'); img.classList.add('hidden'); empty.classList.remove('hidden');
+        rm.classList.add('hidden'); rm.classList.remove('inline-flex'); txt.textContent = 'Pilih Foto';
+      }
+    }
+
+    function resetCoverUploader(existingUrl) {
+      if (coverState.previewUrl) { try { URL.revokeObjectURL(coverState.previewUrl); } catch (e) {} }
+      coverState = { blob: null, previewUrl: null, removed: false };
+      var fi = document.getElementById('mod-cover-file'); if (fi) fi.value = '';
+      var hid = document.getElementById('mod-cover-url'); if (hid) hid.value = existingUrl || '';
+      setCoverInfo(COVER_INFO_DEFAULT);
+      setCoverPreview(existingUrl || '');
+    }
+
+    function compressImageFile(file, maxDim, quality) {
+      return new Promise(function(resolve, reject) {
+        var url = URL.createObjectURL(file);
+        var img = new Image();
+        img.onload = function() {
+          try {
+            var w = img.naturalWidth, h = img.naturalHeight;
+            if (!w || !h) throw new Error('ukuran gambar tidak terbaca');
+            var scale = Math.min(1, maxDim / Math.max(w, h));
+            var cw = Math.round(w * scale), ch = Math.round(h * scale);
+            var c = document.createElement('canvas'); c.width = cw; c.height = ch;
+            var ctx = c.getContext('2d');
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cw, ch);
+            ctx.drawImage(img, 0, 0, cw, ch);
+            URL.revokeObjectURL(url);
+            c.toBlob(function(b) { b ? resolve(b) : reject(new Error('gagal memampatkan')); }, 'image/jpeg', quality);
+          } catch (err) { URL.revokeObjectURL(url); reject(err); }
+        };
+        img.onerror = function() { URL.revokeObjectURL(url); reject(new Error('format tidak didukung')); };
+        img.src = url;
+      });
+    }
+
+    function blobToDataUrl(blob) {
+      return new Promise(function(resolve, reject) {
+        var r = new FileReader();
+        r.onload = function() { resolve(r.result); };
+        r.onerror = function() { reject(new Error('gagal membaca foto')); };
+        r.readAsDataURL(blob);
+      });
+    }
+
+    window.handleCoverFileChange = async function(input) {
+      var file = input.files && input.files[0];
+      if (!file) return;
+      if (!/^image\//i.test(file.type) && !/\.(jpe?g|png|webp|gif|bmp|heic|heif)$/i.test(file.name)) {
+        showToast("File yang dipilih bukan foto. Pilih JPG, PNG, atau WebP.", "error");
+        input.value = ''; return;
+      }
+      if (file.size > 25 * 1024 * 1024) {
+        showToast("Ukuran foto terlalu besar (maksimal 25 MB).", "error");
+        input.value = ''; return;
+      }
+      setCoverInfo('Memproses foto...');
+      try {
+        var db = isDbConnected();
+        var blob = await compressImageFile(file, db ? 1280 : 800, db ? 0.82 : 0.72);
+        if (coverState.previewUrl) { try { URL.revokeObjectURL(coverState.previewUrl); } catch (e) {} }
+        coverState.blob = blob;
+        coverState.previewUrl = URL.createObjectURL(blob);
+        coverState.removed = false;
+        setCoverPreview(coverState.previewUrl);
+        setCoverInfo('Siap diunggah saat disimpan (' + fmtSize(file.size) + ' menjadi ' + fmtSize(blob.size) + ').');
+      } catch (err) {
+        console.warn('Proses foto gagal:', err);
+        input.value = '';
+        setCoverInfo(COVER_INFO_DEFAULT);
+        showToast("Foto tidak bisa dibaca. Coba foto lain (JPG, PNG, atau WebP).", "error");
+      }
+    };
+
+    window.removeCoverPhoto = function() {
+      if (coverState.previewUrl) { try { URL.revokeObjectURL(coverState.previewUrl); } catch (e) {} }
+      coverState.blob = null; coverState.previewUrl = null; coverState.removed = true;
+      var fi = document.getElementById('mod-cover-file'); if (fi) fi.value = '';
+      setCoverPreview('');
+      setCoverInfo('Foto akan dihapus saat modul disimpan.');
+    };
+
+    // Unggah ke Supabase Storage (mode database) atau simpan sebagai data URL (mode lokal)
+    async function uploadCoverBlob(blob) {
+      if (isDbConnected()) {
+        var path = 'covers/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.jpg';
+        try {
+          var up = await supabaseClient.storage.from(COVER_BUCKET).upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000', upsert: false });
+          if (up.error) {
+            var msg = String(up.error.message || up.error);
+            if (/bucket not found/i.test(msg)) {
+              showToast("Bucket penyimpanan 'module-covers' belum dibuat. Jalankan supabase-storage-setup.sql di Supabase (SQL Editor), lalu coba lagi.", "error");
+            } else if (/row-level security|unauthori[sz]ed|policy|permission/i.test(msg)) {
+              showToast("Izin upload ditolak. Pastikan supabase-storage-setup.sql sudah dijalankan dan Anda masuk sebagai Administrator.", "error");
+            } else {
+              showToast("Gagal mengunggah foto: " + msg, "error");
+            }
+            return null;
+          }
+          var pub = supabaseClient.storage.from(COVER_BUCKET).getPublicUrl(path);
+          var url = pub && pub.data && pub.data.publicUrl;
+          if (!url) { showToast("Foto terunggah tetapi alamat publiknya tidak ditemukan.", "error"); return null; }
+          return url;
+        } catch (err) {
+          showToast("Koneksi saat mengunggah foto bermasalah: " + err.message, "error");
+          return null;
+        }
+      }
+      try { return await blobToDataUrl(blob); }
+      catch (err) { showToast("Foto tidak bisa diproses: " + err.message, "error"); return null; }
+    }
+
+    // Hapus berkas foto lama dari Storage (hanya yang berasal dari bucket ini; kegagalan diabaikan)
+    function coverPathFromUrl(url) {
+      if (!url || !isDbConnected()) return null;
+      var marker = '/storage/v1/object/public/' + COVER_BUCKET + '/';
+      var s = String(url);
+      if (s.indexOf(SUPABASE_URL) !== 0) return null;
+      var i = s.indexOf(marker);
+      if (i === -1) return null;
+      try { return decodeURIComponent(s.slice(i + marker.length).split('?')[0]); } catch (e) { return null; }
+    }
+    async function deleteCoverFile(url) {
+      var p = coverPathFromUrl(url);
+      if (!p) return;
+      try { await supabaseClient.storage.from(COVER_BUCKET).remove([p]); }
+      catch (e) { console.warn('Gagal menghapus foto lama:', e); }
+    }
+
+    function setSaveBusy(busy) {
+      savingModule = busy;
+      var b = document.getElementById('btn-save-module');
+      if (!b) return;
+      b.disabled = busy;
+      b.textContent = busy ? 'Menyimpan...' : 'Simpan Modul';
+    }
+
     window.handleSaveModule = async function(e) {
       if (e) e.preventDefault();
+      if (savingModule) return;
       var id = document.getElementById('mod-id').value;
+
+      var oldCover = '';
+      if (id) {
+        var cur = state.modules.find(function(x) { return String(x.id) === String(id); });
+        oldCover = (cur && cur.cover_url) ? cur.cover_url : '';
+      }
+      var coverUrl = document.getElementById('mod-cover-url').value.trim();
+      if (coverState.removed && !coverState.blob) coverUrl = '';
+      if (coverUrl && !/^(https?:\/\/|data:image\/)/i.test(coverUrl)) coverUrl = '';
+
       var modData = {
         title: document.getElementById('mod-title').value.trim(),
         category: document.getElementById('mod-category').value,
-        cover_url: document.getElementById('mod-cover-url').value.trim(),
+        cover_url: coverUrl,
         external_url: document.getElementById('mod-external-url').value.trim(),
         video_url: document.getElementById('mod-video-url').value.trim(),
         download_url: document.getElementById('mod-download-url').value.trim(),
@@ -1553,7 +1879,7 @@
         order_index: state.modules.length + 1
       };
 
-      var urlFields = [['external_url', 'Tautan Langsung'], ['cover_url', 'Gambar Cover'], ['download_url', 'Unduhan']];
+      var urlFields = [['external_url', 'Tautan Langsung'], ['download_url', 'Unduhan']];
       for (var u = 0; u < urlFields.length; u++) {
         var key = urlFields[u][0];
         if (modData[key]) {
@@ -1566,45 +1892,67 @@
         }
       }
 
-      if (!IS_PREVIEW && supabaseClient) {
-        if (!(await ensureAdminSession())) return;
-        try {
-          var dbRes;
-          if (id) {
-            dbRes = await supabaseClient.from('modules').update(modData).eq('id', id).select();
-          } else {
-            dbRes = await supabaseClient.from('modules').insert([modData]).select();
-          }
-          if (dbRes.error) {
-            console.warn("Supabase simpan modul error:", dbRes.error);
-            showToast("Gagal menyimpan ke database: " + dbRes.error.message, "error");
-            return;
-          }
-          if (id && (!dbRes.data || dbRes.data.length === 0)) {
-            showToast("Tidak ada data yang diperbarui di database (periksa ID modul / izin RLS Supabase).", "error");
-            return;
-          }
-          if (!id && dbRes.data && dbRes.data[0]) modData.id = dbRes.data[0].id;
-        } catch (err) {
-          console.warn("Supabase simpan modul error:", err);
-          showToast("Koneksi database bermasalah: " + err.message, "error");
-          return;
+      setSaveBusy(true);
+      var uploadedUrl = '';
+      var fail = async function(msg) {
+        showToast(msg, "error");
+        if (uploadedUrl) await deleteCoverFile(uploadedUrl);
+      };
+      try {
+        if (!IS_PREVIEW && supabaseClient) {
+          if (!(await ensureAdminSession())) return;
         }
-      }
 
-      if (id) {
-        var idx = state.modules.findIndex(function(m) { return m.id === id; });
-        if (idx !== -1) state.modules[idx] = Object.assign({}, state.modules[idx], modData);
-        showToast("Modul berhasil diperbarui!");
-      } else {
-        modData.id = modData.id || ('mod-' + Date.now());
-        state.modules.push(modData);
-        showToast("Modul baru berhasil ditambahkan!");
-      }
+        if (coverState.blob) {
+          var up = await uploadCoverBlob(coverState.blob);
+          if (!up) return;
+          modData.cover_url = up;
+          if (isDbConnected()) uploadedUrl = up;
+        }
 
-      setStore('modules', state.modules);
-      closeModal('modal-module-form');
-      renderApp();
+        if (!IS_PREVIEW && supabaseClient) {
+          try {
+            var dbRes;
+            if (id) {
+              dbRes = await supabaseClient.from('modules').update(modData).eq('id', id).select();
+            } else {
+              dbRes = await supabaseClient.from('modules').insert([modData]).select();
+            }
+            if (dbRes.error) {
+              console.warn("Supabase simpan modul error:", dbRes.error);
+              await fail("Gagal menyimpan ke database: " + dbRes.error.message);
+              return;
+            }
+            if (id && (!dbRes.data || dbRes.data.length === 0)) {
+              await fail("Tidak ada data yang diperbarui di database (periksa ID modul / izin RLS Supabase).");
+              return;
+            }
+            if (!id && dbRes.data && dbRes.data[0]) modData.id = dbRes.data[0].id;
+          } catch (err) {
+            console.warn("Supabase simpan modul error:", err);
+            await fail("Koneksi database bermasalah: " + err.message);
+            return;
+          }
+        }
+
+        if (id) {
+          var idx = state.modules.findIndex(function(m) { return m.id === id; });
+          if (idx !== -1) state.modules[idx] = Object.assign({}, state.modules[idx], modData);
+          showToast("Modul berhasil diperbarui!");
+        } else {
+          modData.id = modData.id || ('mod-' + Date.now());
+          state.modules.push(modData);
+          showToast("Modul baru berhasil ditambahkan!");
+        }
+
+        setStore('modules', state.modules);
+        if (oldCover && oldCover !== modData.cover_url) deleteCoverFile(oldCover);
+        resetCoverUploader('');
+        closeModal('modal-module-form');
+        renderApp();
+      } finally {
+        setSaveBusy(false);
+      }
     };
 
     // ----- Helper database: pastikan sesi admin Supabase aktif sebelum menulis -----
@@ -1661,6 +2009,8 @@
             return;
           }
         }
+        var delMod = state.modules.find(function(m) { return String(m.id) === String(id); });
+        if (delMod && delMod.cover_url) deleteCoverFile(delMod.cover_url);
         state.modules = state.modules.filter(function(m) { return String(m.id) !== String(id); });
         state.accessGrants = state.accessGrants.filter(function(g) { return String(g.module_id) !== String(id); });
         setStore('modules', state.modules);
@@ -2357,6 +2707,7 @@
       var main = document.getElementById('main-content-area');
 
       if (!state.currentUser && !state.allowGuestBrowse) {
+        document.body.classList.remove('page-home');
         if (sidebar) sidebar.classList.add('!hidden');
         if (bottomNav) bottomNav.classList.add('!hidden');
         if (header) header.classList.add('!hidden');
@@ -2370,8 +2721,12 @@
       if (sidebar) sidebar.classList.remove('!hidden');
       if (bottomNav) bottomNav.classList.remove('!hidden');
       if (header) header.classList.remove('!hidden');
+      var isHomePage = (state.currentPage === 'home' || state.currentPage === 'graph');
+      document.body.classList.toggle('page-home', isHomePage);
       if (main) {
-        main.className = "flex-1 overflow-y-auto px-6 md:px-10 pb-24 md:pb-10";
+        main.className = isHomePage
+          ? "flex-1 overflow-y-auto px-0 md:px-10 pb-28 md:pb-10"
+          : "flex-1 overflow-y-auto px-5 md:px-10 pb-28 md:pb-10";
       }
 
       renderNavigation();
@@ -2395,6 +2750,9 @@
           break;
         case 'notification':
           main.innerHTML = renderNotificationView();
+          break;
+        case 'account':
+          main.innerHTML = renderAccountView();
           break;
         default:
           main.innerHTML = renderHomeDashboard();
@@ -2830,7 +3188,7 @@
       var banner = document.createElement('div');
       banner.id = 'install-banner';
       banner.className = 'fixed z-[9990] left-4 right-4 md:left-auto md:right-6 md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 flex items-start gap-3';
-      banner.style.bottom = 'calc(5rem + env(safe-area-inset-bottom))';
+      banner.style.bottom = 'calc(6.5rem + env(safe-area-inset-bottom))';
       var isAdminUser = state.currentUser && state.currentUser.role === 'admin';
       var isAndroidDevice = /android/i.test(navigator.userAgent);
       var text, actions;
